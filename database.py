@@ -30,8 +30,10 @@ def inicializar_banco():
                 id_servico INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_profissional INTEGER NOT NULL,
                 nome TEXT NOT NULL,
-                preco REAL NOT NULL,
-                duracao INTEGER NOT NULL,
+                preco REAL NOT NULL CHECK (preco >= 0),
+                duracao INTEGER NOT NULL CHECK (duracao > 0),
+                ativo INTEGER NOT NULL DEFAULT 1
+                    CHECK (ativo IN (0, 1)),
                 FOREIGN KEY (id_profissional)
                     REFERENCES profissional(id_profissional)
             )
@@ -81,7 +83,17 @@ def inicializar_banco():
                 data TEXT NOT NULL,
                 hora TEXT NOT NULL,
                 codigo_atendimento TEXT NOT NULL UNIQUE,
-                status TEXT NOT NULL DEFAULT 'agendado',
+                status TEXT NOT NULL DEFAULT 'agendado'
+                    CHECK (status IN (
+                        'agendado',
+                        'cancelado',
+                        'concluido',
+                        'falta'
+                    )),
+                duracao_minutos INTEGER NOT NULL
+                    CHECK (duracao_minutos > 0),
+                preco_praticado REAL NOT NULL
+                    CHECK (preco_praticado >= 0),
                 FOREIGN KEY (id_cliente)
                     REFERENCES cliente(id_cliente),
                 FOREIGN KEY (id_servico)
