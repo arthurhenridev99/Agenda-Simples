@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from database import conectar
 
@@ -14,18 +13,12 @@ def migrar():
 
     try:
         # Conferir se não existem registros relacionados.
-        agendamentos = conexao.execute(
-            "SELECT COUNT(*) FROM agendamento"
-        ).fetchone()[0]
+        agendamentos = conexao.execute("SELECT COUNT(*) FROM agendamento").fetchone()[0]
 
-        notificacoes = conexao.execute(
-            "SELECT COUNT(*) FROM notificacao"
-        ).fetchone()[0]
+        notificacoes = conexao.execute("SELECT COUNT(*) FROM notificacao").fetchone()[0]
 
         if agendamentos != 0 or notificacoes != 0:
-            raise RuntimeError(
-                "Existem registros relacionados. Migração cancelada."
-            )
+            raise RuntimeError("Existem registros relacionados. Migração cancelada.")
 
         # Desabilitar temporariamente as chaves estrangeiras
         # antes de iniciar a transação de reconstrução.
@@ -75,23 +68,15 @@ def migrar():
         """)
 
         # Conferir a integridade antes de confirmar.
-        erros = conexao.execute(
-            "PRAGMA foreign_key_check"
-        ).fetchall()
+        erros = conexao.execute("PRAGMA foreign_key_check").fetchall()
 
         if erros:
-            raise RuntimeError(
-                f"Erro de integridade encontrado: {erros}"
-            )
+            raise RuntimeError(f"Erro de integridade encontrado: {erros}")
 
-        integridade = conexao.execute(
-            "PRAGMA integrity_check"
-        ).fetchone()[0]
+        integridade = conexao.execute("PRAGMA integrity_check").fetchone()[0]
 
         if integridade != "ok":
-            raise RuntimeError(
-                f"Falha de integridade: {integridade}"
-            )
+            raise RuntimeError(f"Falha de integridade: {integridade}")
 
         conexao.commit()
         print("Restrições do banco atualizadas com sucesso!")

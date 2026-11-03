@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horários de Atendimento</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <main class="container py-5">
+
+        <h1 class="mb-3">Horários de Atendimento</h1>
+
+        <p class="text-muted">
+            Gerencie os dias e períodos de trabalho da profissional.
+        </p>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+
+                <h4 class="mb-3">Cadastrar Horário</h4>
+
+                {% if erro %}
+                <div class="alert alert-danger">
+                    {{ erro }}
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <div class="mb-3">
+                        <label for="dia_semana" class="form-label">
+                            Dia da semana
+                        </label>
+
+                        <select id="dia_semana" name="dia_semana" class="form-select" required>
+
+                            <option value="">Selecione o dia</option>
+
+                            {% for dia in dias_semana %}
+                            <option value="{{ loop.index0 }}">
+                                {{ dia }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="hora_inicio" class="form-label">
+                                Horário de início
+                            </label>
+
+                            <input id="hora_inicio" type="time" name="hora_inicio" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="hora_fim" class="form-label">
+                                Horário de término
+                            </label>
+
+                            <input id="hora_fim" type="time" name="hora_fim" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Cadastrar Horário
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <h4 class="mb-3">Horários Configurados</h4>
+
+                {% if horarios %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Dia da semana</th>
+                                <th>Início</th>
+                                <th>Término</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for horario in horarios %}
+                            <tr>
+                                <td>{{ dias_semana[horario[1]] }}</td>
+                                <td>{{ horario[2] }}</td>
+                                <td>{{ horario[3] }}</td>
+
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('editar_horario', id_horario=horario[0]) }}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            Editar
+                                        </a>
+
+                                        <form method="POST"
+                                            action="{{ url_for('remover_horario', id_horario=horario[0]) }}"
+                                            onsubmit="return confirm('Deseja realmente remover este período?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                Remover
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% else %}
+
+                <div class="alert alert-info">
+                    Nenhum horário de atendimento configurado.
+                </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+        <a href="/painel" class="btn btn-secondary mt-3">
+            Voltar ao painel
+        </a>
+
+    </main>
+</body>
+
+</html>

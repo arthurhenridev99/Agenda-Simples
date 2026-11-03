@@ -44,9 +44,11 @@ def inicializar_banco():
             CREATE TABLE IF NOT EXISTS horario_atendimento (
                 id_horario INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_profissional INTEGER NOT NULL,
-                dia_semana TEXT NOT NULL,
+                dia_semana INTEGER NOT NULL
+                    CHECK (dia_semana BETWEEN 0 AND 6),
                 hora_inicio TEXT NOT NULL,
                 hora_fim TEXT NOT NULL,
+                CHECK (hora_inicio < hora_fim),
                 FOREIGN KEY (id_profissional)
                     REFERENCES profissional(id_profissional)
             )

@@ -3,18 +3,8 @@ import secrets
 import sqlite3
 from functools import wraps
 
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session
-)
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash
-)
+from flask import Flask, render_template, request, redirect, url_for, session
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from database import conectar
 
@@ -54,10 +44,7 @@ def cadastro():
         ).fetchone()
 
         if profissional:
-            return render_template(
-                "cadastro.html",
-                cadastro_existente=True
-            )
+            return render_template("cadastro.html", cadastro_existente=True)
 
         if request.method == "POST":
             nome = request.form.get("nome", "").strip()
@@ -83,7 +70,7 @@ def cadastro():
                         INSERT INTO profissional (nome, login, senha_hash)
                         VALUES (?, ?, ?)
                         """,
-                        (nome, login_informado, senha_hash)
+                        (nome, login_informado, senha_hash),
                     )
                     conexao.commit()
                     sucesso = "Cadastro realizado com sucesso!"
@@ -95,11 +82,7 @@ def cadastro():
     finally:
         conexao.close()
 
-    return render_template(
-        "cadastro.html",
-        erro=erro,
-        sucesso=sucesso
-    )
+    return render_template("cadastro.html", erro=erro, sucesso=sucesso)
 
 
 # UC10 - Realizar Login
@@ -123,14 +106,12 @@ def login():
                 FROM profissional
                 WHERE login = ?
                 """,
-                (login_informado,)
+                (login_informado,),
             ).fetchone()
         finally:
             conexao.close()
 
-        if profissional and check_password_hash(
-            profissional[2], senha
-        ):
+        if profissional and check_password_hash(profissional[2], senha):
             session.clear()
             session["id_profissional"] = profissional[0]
             session["nome_profissional"] = profissional[1]
@@ -146,10 +127,7 @@ def login():
 @app.route("/painel")
 @login_obrigatorio
 def painel():
-    return render_template(
-        "painel.html",
-        nome=session["nome_profissional"]
-    )
+    return render_template("painel.html", nome=session["nome_profissional"])
 
 
 # Encerrar sessão
@@ -207,12 +185,7 @@ def listar_servicos():
                         (id_profissional, nome, preco, duracao, ativo)
                         VALUES (?, ?, ?, ?, 1)
                         """,
-                        (
-                            session["id_profissional"],
-                            nome,
-                            float(preco),
-                            duracao
-                        )
+                        (session["id_profissional"], nome, float(preco), duracao),
                     )
                     conexao.commit()
                 finally:
@@ -232,17 +205,15 @@ def listar_servicos():
             WHERE id_profissional = ?
             ORDER BY nome
             """,
-            (session["id_profissional"],)
+            (session["id_profissional"],),
         ).fetchall()
     finally:
         conexao.close()
 
     return render_template(
-        "servicos.html",
-        servicos=servicos,
-        erro=erro,
-        csrf_token=token
+        "servicos.html", servicos=servicos, erro=erro, csrf_token=token
     )
+
 
 # UC11 - Editar servico
 @app.route("/servicos/<int:id_servico>/editar", methods=["GET", "POST"])
@@ -266,7 +237,7 @@ def editar_servico(id_servico):
             FROM servico
             WHERE id_servico = ? AND id_profissional = ?
             """,
-            (id_servico, session["id_profissional"])
+            (id_servico, session["id_profissional"]),
         ).fetchone()
 
         if servico is None:
@@ -309,8 +280,8 @@ def editar_servico(id_servico):
                             float(preco),
                             duracao,
                             id_servico,
-                            session["id_profissional"]
-                        )
+                            session["id_profissional"],
+                        ),
                     )
 
                     conexao.commit()
@@ -320,16 +291,13 @@ def editar_servico(id_servico):
                     erro = "Informe um preço e uma duração válidos."
 
         return render_template(
-            "editar_servico.html",
-            servico=servico,
-            erro=erro,
-            csrf_token=token
+            "editar_servico.html", servico=servico, erro=erro, csrf_token=token
         )
 
     finally:
         conexao.close()
 
-    
+
 # UC11 - Desativar ou reativar servico
 @app.route("/servicos/<int:id_servico>/alternar-status", methods=["POST"])
 @login_obrigatorio
@@ -338,10 +306,7 @@ def alternar_status_servico(id_servico):
     token_recebido = request.form.get("csrf_token", "")
 
     # Verificar a autenticidade do formulario
-    if (
-        not token_esperado
-        or not secrets.compare_digest(token_esperado, token_recebido)
-    ):
+    if not token_esperado or not secrets.compare_digest(token_esperado, token_recebido):
         return "Formulario invalido.", 400
 
     conexao = conectar()
@@ -354,7 +319,7 @@ def alternar_status_servico(id_servico):
             FROM servico
             WHERE id_servico = ? AND id_profissional = ?
             """,
-            (id_servico, session["id_profissional"])
+            (id_servico, session["id_profissional"]),
         ).fetchone()
 
         if servico is None:
@@ -369,11 +334,7 @@ def alternar_status_servico(id_servico):
             SET ativo = ?
             WHERE id_servico = ? AND id_profissional = ?
             """,
-            (
-                novo_status,
-                id_servico,
-                session["id_profissional"]
-            )
+            (novo_status, id_servico, session["id_profissional"]),
         )
 
         conexao.commit()
@@ -382,6 +343,272 @@ def alternar_status_servico(id_servico):
         conexao.close()
 
     return redirect(url_for("listar_servicos"))
+
+
+# UC12 - Listar e cadastrar horarios de atendimento
+@app.route("/horarios", methods=["GET", "POST"])
+@login_obrigatorio
+def listar_horarios():
+    import re
+
+    dias_semana = [
+        "Segunda-feira",
+        "Terça-feira",
+        "Quarta-feira",
+        "Quinta-feira",
+        "Sexta-feira",
+        "Sábado",
+        "Domingo",
+    ]
+
+    erro = None
+
+    token = session.get("csrf_horarios")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_horarios"] = token
+
+    if request.method == "POST":
+        token_recebido = request.form.get("csrf_token", "")
+
+        dia_texto = request.form.get("dia_semana", "")
+        hora_inicio = request.form.get("hora_inicio", "")
+        hora_fim = request.form.get("hora_fim", "")
+
+        formato_hora = r"(?:[01]\d|2[0-3]):[0-5]\d"
+
+        if not secrets.compare_digest(token, token_recebido):
+            erro = "Formulário inválido. Atualize a página."
+
+        elif not dia_texto.isdigit() or int(dia_texto) not in range(7):
+            erro = "Selecione um dia da semana válido."
+
+        elif not (
+            re.fullmatch(formato_hora, hora_inicio)
+            and re.fullmatch(formato_hora, hora_fim)
+        ):
+            erro = "Informe horários válidos."
+
+        elif hora_inicio >= hora_fim:
+            erro = "O horário inicial deve ser anterior ao final."
+
+        else:
+            dia_semana = int(dia_texto)
+            conexao = conectar()
+
+            try:
+                conflito = conexao.execute(
+                    """
+                    SELECT id_horario
+                    FROM horario_atendimento
+                    WHERE id_profissional = ?
+                      AND dia_semana = ?
+                      AND hora_inicio < ?
+                      AND hora_fim > ?
+                    LIMIT 1
+                    """,
+                    (
+                        session["id_profissional"],
+                        dia_semana,
+                        hora_fim,
+                        hora_inicio,
+                    ),
+                ).fetchone()
+
+                if conflito:
+                    erro = "Este período apresenta conflito com outro horário."
+                else:
+                    conexao.execute(
+                        """
+                        INSERT INTO horario_atendimento
+                        (id_profissional, dia_semana, hora_inicio, hora_fim)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            session["id_profissional"],
+                            dia_semana,
+                            hora_inicio,
+                            hora_fim,
+                        ),
+                    )
+
+                    conexao.commit()
+
+            finally:
+                conexao.close()
+
+            if erro is None:
+                return redirect(url_for("listar_horarios"))
+
+    conexao = conectar()
+
+    try:
+        horarios = conexao.execute(
+            """
+            SELECT id_horario, dia_semana, hora_inicio, hora_fim
+            FROM horario_atendimento
+            WHERE id_profissional = ?
+            ORDER BY dia_semana, hora_inicio
+            """,
+            (session["id_profissional"],),
+        ).fetchall()
+
+    finally:
+        conexao.close()
+
+    return render_template(
+        "horarios.html",
+        horarios=horarios,
+        dias_semana=dias_semana,
+        erro=erro,
+        csrf_token=token,
+    )
+
+
+# UC12 - Remover um periodo de atendimento
+@app.route("/horarios/<int:id_horario>/remover", methods=["POST"])
+@login_obrigatorio
+def remover_horario(id_horario):
+    token_esperado = session.get("csrf_horarios", "")
+    token_recebido = request.form.get("csrf_token", "")
+
+    if not token_esperado or not secrets.compare_digest(token_esperado, token_recebido):
+        return "Formulário inválido.", 400
+
+    conexao = conectar()
+
+    try:
+        conexao.execute(
+            """
+            DELETE FROM horario_atendimento
+            WHERE id_horario = ?
+              AND id_profissional = ?
+            """,
+            (id_horario, session["id_profissional"]),
+        )
+        conexao.commit()
+    finally:
+        conexao.close()
+
+    return redirect(url_for("listar_horarios"))
+
+
+# UC12 - Editar horario de atendimento
+@app.route("/horarios/<int:id_horario>/editar", methods=["GET", "POST"])
+@login_obrigatorio
+def editar_horario(id_horario):
+    import re
+
+    dias_semana = [
+        "Segunda-feira",
+        "Terça-feira",
+        "Quarta-feira",
+        "Quinta-feira",
+        "Sexta-feira",
+        "Sábado",
+        "Domingo",
+    ]
+
+    erro = None
+
+    token = session.get("csrf_horarios")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_horarios"] = token
+
+    conexao = conectar()
+
+    try:
+        horario = conexao.execute(
+            """
+            SELECT id_horario, dia_semana, hora_inicio, hora_fim
+            FROM horario_atendimento
+            WHERE id_horario = ? AND id_profissional = ?
+            """,
+            (id_horario, session["id_profissional"]),
+        ).fetchone()
+
+        if horario is None:
+            return "Horário não encontrado.", 404
+
+        if request.method == "POST":
+            token_recebido = request.form.get("csrf_token", "")
+            dia_texto = request.form.get("dia_semana", "")
+            hora_inicio = request.form.get("hora_inicio", "")
+            hora_fim = request.form.get("hora_fim", "")
+
+            formato_hora = r"(?:[01]\d|2[0-3]):[0-5]\d"
+
+            if not secrets.compare_digest(token, token_recebido):
+                erro = "Formulário inválido. Atualize a página."
+
+            elif not dia_texto.isdigit() or int(dia_texto) not in range(7):
+                erro = "Selecione um dia válido."
+
+            elif not (
+                re.fullmatch(formato_hora, hora_inicio)
+                and re.fullmatch(formato_hora, hora_fim)
+            ):
+                erro = "Informe horários válidos."
+
+            elif hora_inicio >= hora_fim:
+                erro = "O horário inicial deve ser anterior ao final."
+
+            else:
+                dia_semana = int(dia_texto)
+
+                conflito = conexao.execute(
+                    """
+                    SELECT id_horario
+                    FROM horario_atendimento
+                    WHERE id_profissional = ?
+                      AND dia_semana = ?
+                      AND id_horario != ?
+                      AND hora_inicio < ?
+                      AND hora_fim > ?
+                    LIMIT 1
+                    """,
+                    (
+                        session["id_profissional"],
+                        dia_semana,
+                        id_horario,
+                        hora_fim,
+                        hora_inicio,
+                    ),
+                ).fetchone()
+
+                if conflito:
+                    erro = "Este período apresenta conflito com outro horário."
+                else:
+                    conexao.execute(
+                        """
+                        UPDATE horario_atendimento
+                        SET dia_semana = ?, hora_inicio = ?, hora_fim = ?
+                        WHERE id_horario = ? AND id_profissional = ?
+                        """,
+                        (
+                            dia_semana,
+                            hora_inicio,
+                            hora_fim,
+                            id_horario,
+                            session["id_profissional"],
+                        ),
+                    )
+
+                    conexao.commit()
+                    return redirect(url_for("listar_horarios"))
+
+        return render_template(
+            "editar_horario.html",
+            horario=horario,
+            dias_semana=dias_semana,
+            erro=erro,
+            csrf_token=token,
+        )
+
+    finally:
+        conexao.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True)
