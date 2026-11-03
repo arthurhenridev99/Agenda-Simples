@@ -610,5 +610,146 @@ def editar_horario(id_horario):
         conexao.close()
 
 
+# UC13 - Cadastrar e listar bloqueios de horarios
+@app.route("/bloqueios", methods=["GET", "POST"])
+@login_obrigatorio
+def listar_bloqueios():
+    import re
+    from datetime import date
+
+    erro = None
+    formulario = request.form
+
+    token = session.get("csrf_bloqueios")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_bloqueios"] = token
+
+    conexao = conectar()
+
+    try:
+        if request.method == "POST":
+            token_recebido = formulario.get("csrf_token", "")
+            data_texto = formulario.get("data", "")
+            hora_inicio = formulario.get("hora_inicio", "")
+            hora_fim = formulario.get("hora_fim", "")
+
+            try:
+                if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", data_texto):
+                    raise ValueError
+                data_bloqueio = date.fromisoformat(data_texto)
+            except ValueError:
+                data_bloqueio = None
+
+            formato_hora = r"(?:[01]\d|2[0-3]):[0-5]\d"
+
+            if not secrets.compare_digest(token, token_recebido):
+                erro = "Formulário inválido. Atualize a página."
+
+            elif data_bloqueio is None:
+                erro = "Informe uma data válida."
+
+            elif data_bloqueio < date.today():
+                erro = "Não é permitido cadastrar bloqueios em datas passadas."
+
+            elif not (
+                re.fullmatch(formato_hora, hora_inicio)
+                and re.fullmatch(formato_hora, hora_fim)
+            ):
+                erro = "Informe horários válidos."
+
+            elif hora_inicio >= hora_fim:
+                erro = "O horário inicial deve ser anterior ao final."
+
+            else:
+                conflito = conexao.execute(
+                    """
+                    SELECT id_bloqueio
+                    FROM bloqueio
+                    WHERE id_profissional = ?
+                      AND data = ?
+                      AND hora_inicio < ?
+                      AND hora_fim > ?
+                    LIMIT 1
+                    """,
+                    (
+                        session["id_profissional"],
+                        data_texto,
+                        hora_fim,
+                        hora_inicio,
+                    ),
+                ).fetchone()
+
+                if conflito:
+                    erro = "Este período já possui um bloqueio."
+                else:
+                    conexao.execute(
+                        """
+                        INSERT INTO bloqueio
+                            (id_profissional, data, hora_inicio, hora_fim)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            session["id_profissional"],
+                            data_texto,
+                            hora_inicio,
+                            hora_fim,
+                        ),
+                    )
+
+                    conexao.commit()
+                    return redirect(url_for("listar_bloqueios"))
+
+        bloqueios = conexao.execute(
+            """
+            SELECT id_bloqueio, data, hora_inicio, hora_fim
+            FROM bloqueio
+            WHERE id_profissional = ?
+            ORDER BY data, hora_inicio
+            """,
+            (session["id_profissional"],),
+        ).fetchall()
+
+        return render_template(
+            "bloqueios.html",
+            bloqueios=bloqueios,
+            erro=erro,
+            csrf_token=token,
+            data_minima=date.today().isoformat(),
+            formulario=formulario,
+        )
+
+    finally:
+        conexao.close()
+
+
+# UC13 - Remover bloqueio de horario
+@app.route("/bloqueios/<int:id_bloqueio>/remover", methods=["POST"])
+@login_obrigatorio
+def remover_bloqueio(id_bloqueio):
+    token_esperado = session.get("csrf_bloqueios", "")
+    token_recebido = request.form.get("csrf_token", "")
+
+    if not token_esperado or not secrets.compare_digest(token_esperado, token_recebido):
+        return "Formulário inválido.", 400
+
+    conexao = conectar()
+
+    try:
+        conexao.execute(
+            """
+            DELETE FROM bloqueio
+            WHERE id_bloqueio = ?
+              AND id_profissional = ?
+            """,
+            (id_bloqueio, session["id_profissional"]),
+        )
+        conexao.commit()
+    finally:
+        conexao.close()
+
+    return redirect(url_for("listar_bloqueios"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)
