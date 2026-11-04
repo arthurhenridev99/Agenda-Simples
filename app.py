@@ -751,5 +751,340 @@ def remover_bloqueio(id_bloqueio):
     return redirect(url_for("listar_bloqueios"))
 
 
+# UC14 - Consultar disponibilidade de horarios
+@app.route("/disponibilidade")
+def consultar_disponibilidade():
+    from datetime import date
+
+    servico_texto = request.args.get("servico", "")
+    data_texto = request.args.get("data", "")
+
+    horarios = []
+    erro = None
+    consulta_realizada = False
+
+    conexao = conectar()
+
+    try:
+        servicos = conexao.execute("""
+            SELECT id_servico, nome, preco, duracao
+            FROM servico
+            WHERE ativo = 1
+            ORDER BY nome
+            """).fetchall()
+    finally:
+        conexao.close()
+
+    if request.args:
+        if not servico_texto.isdigit():
+            erro = "Selecione um serviço válido."
+
+        elif not any(servico[0] == int(servico_texto) for servico in servicos):
+            erro = "O serviço selecionado não está disponível."
+
+        else:
+            try:
+                data_escolhida = date.fromisoformat(data_texto)
+
+                if data_escolhida.isoformat() != data_texto:
+                    raise ValueError
+
+                if data_escolhida < date.today():
+                    erro = "Selecione uma data atual ou futura."
+
+            except ValueError:
+                erro = "Selecione uma data válida."
+
+            if erro is None:
+                from disponibilidade import calcular_horarios_disponiveis
+
+                horarios = calcular_horarios_disponiveis(
+                    int(servico_texto),
+                    data_texto,
+                )
+                consulta_realizada = True
+
+    return render_template(
+        "disponibilidade.html",
+        servicos=servicos,
+        servico_selecionado=servico_texto,
+        data_selecionada=data_texto,
+        data_minima=date.today().isoformat(),
+        horarios=horarios,
+        erro=erro,
+        consulta_realizada=consulta_realizada,
+    )
+
+
+# Realizar agendamento da cliente
+@app.route("/agendar", methods=["GET", "POST"])
+def agendar():
+    from datetime import date
+
+    from agendamentos import registrar_agendamento
+    from disponibilidade import calcular_horarios_disponiveis
+
+    origem = request.form if request.method == "POST" else request.args
+
+    servico_texto = origem.get("servico", "")
+    data_texto = origem.get("data", "")
+    hora = origem.get("hora", "")
+
+    if not servico_texto.isdigit():
+        return redirect(url_for("consultar_disponibilidade"))
+
+    id_servico = int(servico_texto)
+
+    try:
+        data_escolhida = date.fromisoformat(data_texto)
+        if data_escolhida.isoformat() != data_texto:
+            raise ValueError
+    except ValueError:
+        return redirect(url_for("consultar_disponibilidade"))
+
+    conexao = conectar()
+    try:
+        servico = conexao.execute(
+            """
+            SELECT id_servico, nome, duracao, preco
+            FROM servico
+            WHERE id_servico = ? AND ativo = 1
+            """,
+            (id_servico,),
+        ).fetchone()
+    finally:
+        conexao.close()
+
+    if servico is None:
+        return redirect(url_for("consultar_disponibilidade"))
+
+    disponiveis = calcular_horarios_disponiveis(id_servico, data_texto)
+
+    if hora not in disponiveis:
+        return redirect(
+            url_for(
+                "consultar_disponibilidade",
+                servico=id_servico,
+                data=data_texto,
+            )
+        )
+
+    token = session.get("csrf_agendamento")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_agendamento"] = token
+
+    erro = None
+
+    if request.method == "POST":
+        token_recebido = request.form.get("csrf_token", "")
+
+        if not secrets.compare_digest(token, token_recebido):
+            return "Formulário inválido.", 400
+
+        try:
+            codigo = registrar_agendamento(
+                id_servico,
+                data_texto,
+                hora,
+                request.form.get("nome", ""),
+                request.form.get("telefone", ""),
+            )
+            return redirect(url_for("agendamento_confirmado", codigo=codigo))
+
+        except ValueError as excecao:
+            erro = str(excecao)
+
+    return render_template(
+        "agendar.html",
+        servico=servico,
+        data=data_texto,
+        hora=hora,
+        erro=erro,
+        csrf_token=token,
+    )
+
+
+# Exibir comprovante do agendamento
+@app.route("/agendamento/confirmado/<codigo>")
+def agendamento_confirmado(codigo):
+    conexao = conectar()
+
+    try:
+        agendamento = conexao.execute(
+            """
+            SELECT
+                s.nome, a.data, a.hora, a.codigo_atendimento
+            FROM agendamento AS a
+            JOIN servico AS s
+              ON s.id_servico = a.id_servico
+            WHERE a.codigo_atendimento = ?
+            """,
+            (codigo,),
+        ).fetchone()
+    finally:
+        conexao.close()
+
+    if agendamento is None:
+        return "Agendamento não encontrado.", 404
+
+    return render_template(
+        "agendamento_confirmado.html",
+        agendamento=agendamento,
+    )
+
+
+# Consultar agendamento pelo telefone e codigo
+@app.route("/consultar-agendamento", methods=["GET", "POST"])
+def consultar_agendamento():
+    import re
+
+    erro = None
+    agendamento = None
+
+    token = session.get("csrf_consulta")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_consulta"] = token
+
+    if request.method == "POST":
+        token_recebido = request.form.get("csrf_token", "")
+        codigo = request.form.get("codigo", "").strip().upper()
+        telefone = re.sub(r"\D", "", request.form.get("telefone", ""))
+
+        if not secrets.compare_digest(token, token_recebido):
+            return "Formulário inválido.", 400
+
+        if not re.fullmatch(r"[A-F0-9]{16}", codigo):
+            erro = "Informe um código de atendimento válido."
+
+        elif len(telefone) not in (10, 11):
+            erro = "Informe um telefone válido com DDD."
+
+        else:
+            conexao = conectar()
+
+            try:
+                agendamento = conexao.execute(
+                    """
+                    SELECT
+                        a.id_agendamento,
+                        c.nome,
+                        s.nome,
+                        a.data,
+                        a.hora,
+                        a.status,
+                        a.codigo_atendimento,
+                        a.duracao_minutos,
+                        a.preco_praticado
+                    FROM agendamento AS a
+                    JOIN cliente AS c
+                      ON c.id_cliente = a.id_cliente
+                    JOIN servico AS s
+                      ON s.id_servico = a.id_servico
+                    WHERE a.codigo_atendimento = ?
+                      AND c.telefone = ?
+                    """,
+                    (codigo, telefone),
+                ).fetchone()
+
+            finally:
+                conexao.close()
+
+            if agendamento is None:
+                erro = "Agendamento não encontrado. " "Confira o telefone e o código."
+
+    return render_template(
+        "consultar_agendamento.html",
+        agendamento=agendamento,
+        erro=erro,
+        csrf_token=token,
+    )
+
+
+# Cancelar agendamento da cliente
+@app.route("/agendamentos/cancelar", methods=["POST"])
+def cancelar_agendamento():
+    import re
+    from datetime import datetime, timedelta
+
+    from flask import flash
+
+    token_esperado = session.get("csrf_consulta", "")
+    token_recebido = request.form.get("csrf_token", "")
+
+    if not token_esperado or not secrets.compare_digest(token_esperado, token_recebido):
+        return "Formulário inválido.", 400
+
+    codigo = request.form.get("codigo", "").strip().upper()
+    telefone = re.sub(r"\D", "", request.form.get("telefone", ""))
+
+    if not re.fullmatch(r"[A-F0-9]{16}", codigo) or len(telefone) not in (10, 11):
+        flash("Dados do agendamento inválidos.", "danger")
+        return redirect(url_for("consultar_agendamento"))
+
+    conexao = conectar()
+
+    try:
+        # Bloqueia alterações concorrentes durante o cancelamento.
+        conexao.execute("BEGIN IMMEDIATE")
+
+        agendamento = conexao.execute(
+            """
+            SELECT a.id_agendamento, a.data, a.hora, a.status
+            FROM agendamento AS a
+            JOIN cliente AS c
+              ON c.id_cliente = a.id_cliente
+            WHERE a.codigo_atendimento = ?
+              AND c.telefone = ?
+            """,
+            (codigo, telefone),
+        ).fetchone()
+
+        if agendamento is None:
+            flash("Agendamento não encontrado.", "danger")
+
+        elif agendamento[3] != "agendado":
+            flash("Este agendamento não está ativo.", "danger")
+
+        else:
+            data_hora = datetime.strptime(
+                f"{agendamento[1]} {agendamento[2]}",
+                "%Y-%m-%d %H:%M",
+            )
+
+            antecedencia = data_hora - datetime.now()
+
+            if antecedencia < timedelta(hours=4):
+                flash(
+                    "O cancelamento exige pelo menos 4 horas de antecedência.",
+                    "danger",
+                )
+            else:
+                cursor = conexao.execute(
+                    """
+                    UPDATE agendamento
+                    SET status = 'cancelado'
+                    WHERE id_agendamento = ?
+                      AND status = 'agendado'
+                    """,
+                    (agendamento[0],),
+                )
+
+                if cursor.rowcount == 1:
+                    conexao.commit()
+                    flash(
+                        "Agendamento cancelado com sucesso!",
+                        "success",
+                    )
+                else:
+                    flash("Não foi possível cancelar.", "danger")
+
+    finally:
+        conexao.close()
+
+    return redirect(url_for("consultar_agendamento"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)
