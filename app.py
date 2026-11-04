@@ -1086,5 +1086,136 @@ def cancelar_agendamento():
     return redirect(url_for("consultar_agendamento"))
 
 
+# Reagendar atendimento pela cliente
+@app.route("/reagendar", methods=["POST"])
+def reagendar():
+    import re
+    from datetime import date, datetime, timedelta
+
+    from flask import flash
+    from agendamentos import reagendar_agendamento
+    from disponibilidade import calcular_horarios_disponiveis
+
+    token_esperado = session.get("csrf_consulta", "")
+    token_recebido = request.form.get("csrf_token", "")
+
+    if not token_esperado or not secrets.compare_digest(token_esperado, token_recebido):
+        return "Formulário inválido.", 400
+
+    codigo = request.form.get("codigo", "").strip().upper()
+    telefone = re.sub(r"\D", "", request.form.get("telefone", ""))
+
+    if not re.fullmatch(r"[A-F0-9]{16}", codigo) or len(telefone) not in (10, 11):
+        flash("Dados de identificação inválidos.", "danger")
+        return redirect(url_for("consultar_agendamento"))
+
+    conexao = conectar()
+
+    try:
+        agendamento = conexao.execute(
+            """
+            SELECT
+                a.id_agendamento,
+                a.id_servico,
+                a.data,
+                a.hora,
+                a.status,
+                a.duracao_minutos,
+                s.nome
+            FROM agendamento AS a
+            JOIN cliente AS c
+              ON c.id_cliente = a.id_cliente
+            JOIN servico AS s
+              ON s.id_servico = a.id_servico
+            WHERE a.codigo_atendimento = ?
+              AND c.telefone = ?
+            """,
+            (codigo, telefone),
+        ).fetchone()
+
+    finally:
+        conexao.close()
+
+    if agendamento is None:
+        flash("Agendamento não encontrado.", "danger")
+        return redirect(url_for("consultar_agendamento"))
+
+    if agendamento[4] != "agendado":
+        flash("Este agendamento não está ativo.", "danger")
+        return redirect(url_for("consultar_agendamento"))
+
+    data_hora_atual = datetime.strptime(
+        f"{agendamento[2]} {agendamento[3]}",
+        "%Y-%m-%d %H:%M",
+    )
+
+    if data_hora_atual < datetime.now() + timedelta(hours=4):
+        flash(
+            "O reagendamento exige pelo menos 4 horas de antecedência.",
+            "danger",
+        )
+        return redirect(url_for("consultar_agendamento"))
+
+    acao = request.form.get("acao", "abrir")
+    data_nova = request.form.get("data_nova", "")
+    hora_nova = request.form.get("hora_nova", "")
+
+    erro = None
+    horarios = None
+
+    if acao not in ("abrir", "consultar", "confirmar"):
+        return "Ação inválida.", 400
+
+    if acao in ("consultar", "confirmar"):
+        try:
+            data_escolhida = date.fromisoformat(data_nova)
+
+            if data_escolhida.isoformat() != data_nova or data_escolhida < date.today():
+                raise ValueError
+
+        except ValueError:
+            erro = "Selecione uma data válida e futura."
+
+        if erro is None:
+            if acao == "confirmar":
+                try:
+                    reagendar_agendamento(
+                        agendamento[0],
+                        data_nova,
+                        hora_nova,
+                    )
+
+                except ValueError as excecao:
+                    erro = str(excecao)
+
+                else:
+                    return redirect(
+                        url_for(
+                            "agendamento_confirmado",
+                            codigo=codigo,
+                        )
+                    )
+
+            horarios = calcular_horarios_disponiveis(
+                agendamento[1],
+                data_nova,
+                id_agendamento_ignorar=agendamento[0],
+                duracao_override=agendamento[5],
+            )
+
+    return render_template(
+        "reagendar.html",
+        agendamento=agendamento,
+        codigo=codigo,
+        telefone=telefone,
+        data_nova=data_nova,
+        hora_nova=hora_nova,
+        data_minima=date.today().isoformat(),
+        horarios=horarios,
+        erro=erro,
+        csrf_token=token_esperado,
+    )
+
+
 if __name__ == "__main__":
     app.run(debug=True)

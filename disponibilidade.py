@@ -12,6 +12,7 @@ def calcular_horarios_disponiveis(
     id_servico,
     data_texto,
     id_agendamento_ignorar=None,
+    duracao_override=None,
 ):
     data_escolhida = date.fromisoformat(data_texto)
     agora = datetime.now()
@@ -36,6 +37,11 @@ def calcular_horarios_disponiveis(
             return []
 
         id_profissional, duracao = servico
+
+        if duracao_override is not None:
+            if duracao_override <= 0:
+                return []
+            duracao = duracao_override
 
         # Python: segunda=0, terça=1, ..., domingo=6
         periodos = conexao.execute(

@@ -1,6 +1,6 @@
 import re
 import secrets
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from database import conectar
 from disponibilidade import calcular_horarios_disponiveis
@@ -115,6 +115,101 @@ def registrar_agendamento(
 
         conexao.commit()
         return codigo
+
+    except Exception:
+        conexao.rollback()
+        raise
+
+    finally:
+        conexao.close()
+
+
+# Reagendar um atendimento existente
+def reagendar_agendamento(id_agendamento, data_nova, hora_nova):
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", data_nova):
+        raise ValueError("Data inválida.")
+
+    try:
+        data_escolhida = date.fromisoformat(data_nova)
+    except ValueError:
+        raise ValueError("Data inválida.") from None
+
+    formato_hora = r"(?:[01]\d|2[0-3]):[0-5]\d"
+
+    if not re.fullmatch(formato_hora, hora_nova):
+        raise ValueError("Horário inválido.")
+
+    conexao = conectar()
+
+    try:
+        # Impedir alterações concorrentes
+        conexao.execute("BEGIN IMMEDIATE")
+
+        agendamento = conexao.execute(
+            """
+            SELECT
+                id_servico,
+                data,
+                hora,
+                status,
+                duracao_minutos
+            FROM agendamento
+            WHERE id_agendamento = ?
+            """,
+            (id_agendamento,),
+        ).fetchone()
+
+        if agendamento is None:
+            raise ValueError("Agendamento não encontrado.")
+
+        id_servico, data_atual, hora_atual, status, duracao = agendamento
+
+        if status != "agendado":
+            raise ValueError("Este agendamento não está ativo.")
+
+        # Verificar o prazo da reserva original
+        data_hora_atual = datetime.strptime(
+            f"{data_atual} {hora_atual}",
+            "%Y-%m-%d %H:%M",
+        )
+
+        antecedencia_minima = datetime.now() + timedelta(hours=4)
+
+        if data_hora_atual < antecedencia_minima:
+            raise ValueError(
+                "O reagendamento exige pelo menos 4 horas " "de antecedência."
+            )
+
+        if data_nova == data_atual and hora_nova == hora_atual:
+            raise ValueError("Escolha uma data ou horário diferente.")
+
+        # Conferir novamente a disponibilidade
+        horarios_disponiveis = calcular_horarios_disponiveis(
+            id_servico,
+            data_nova,
+            id_agendamento_ignorar=id_agendamento,
+            duracao_override=duracao,
+        )
+
+        if hora_nova not in horarios_disponiveis:
+            raise ValueError("O novo horário não está disponível.")
+
+        # Atualizar a reserva mantendo o mesmo código
+        cursor = conexao.execute(
+            """
+            UPDATE agendamento
+            SET data = ?, hora = ?
+            WHERE id_agendamento = ?
+              AND status = 'agendado'
+            """,
+            (data_nova, hora_nova, id_agendamento),
+        )
+
+        if cursor.rowcount != 1:
+            raise ValueError("Não foi possível reagendar o atendimento.")
+
+        conexao.commit()
+        return True
 
     except Exception:
         conexao.rollback()

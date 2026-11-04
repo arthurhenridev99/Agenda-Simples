@@ -82,14 +82,30 @@
 
             </div>
 
+
             {% if agendamento[5] == "agendado" %}
+
             <hr>
 
             <p class="text-muted small">
-                Cancelamentos devem ser realizados com pelo menos
-                4 horas de antecedência.
+                Reagendamentos e cancelamentos exigem
+                pelo menos 4 horas de antecedência.
             </p>
 
+            <!-- FORMULÁRIO DE REAGENDAMENTO -->
+            <form method="POST" action="{{ url_for('reagendar') }}" class="mb-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <input type="hidden" name="codigo" value="{{ agendamento[6] }}">
+
+                <input type="hidden" name="telefone" value="{{ request.form.get('telefone', '') }}">
+
+                <button type="submit" name="acao" value="abrir" class="btn btn-outline-primary">
+                    Reagendar Agendamento
+                </button>
+            </form>
+
+            <!-- FORMULÁRIO DE CANCELAMENTO -->
             <form method="POST" action="{{ url_for('cancelar_agendamento') }}"
                 onsubmit="return confirm('Deseja realmente cancelar este agendamento?');">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -102,7 +118,9 @@
                     Cancelar Agendamento
                 </button>
             </form>
+
             {% endif %}
+
 
         </div>
         {% endif %}
