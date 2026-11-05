@@ -1217,5 +1217,185 @@ def reagendar():
     )
 
 
+# UC - Agenda administrativa da profissional
+@app.route("/agenda")
+@login_obrigatorio
+def agenda_profissional():
+    from datetime import date
+
+    data_filtro = request.args.get("data", "").strip()
+    status_filtro = request.args.get("status", "todos")
+
+    status_validos = {"todos", "agendado", "cancelado", "concluido", "falta"}
+
+    erro = None
+    agendamentos = []
+
+    if status_filtro not in status_validos:
+        erro = "Situação de atendimento inválida."
+
+    if data_filtro:
+        try:
+            data_validada = date.fromisoformat(data_filtro)
+
+            if data_validada.isoformat() != data_filtro:
+                raise ValueError
+
+        except ValueError:
+            erro = "Informe uma data válida."
+
+    if erro is None:
+        conexao = conectar()
+
+        try:
+            agendamentos = conexao.execute(
+                """
+                SELECT
+                    a.id_agendamento,
+                    a.data,
+                    a.hora,
+                    c.nome,
+                    c.telefone,
+                    s.nome,
+                    a.duracao_minutos,
+                    a.preco_praticado,
+                    a.status
+                FROM agendamento AS a
+                JOIN cliente AS c
+                    ON c.id_cliente = a.id_cliente
+                JOIN servico AS s
+                    ON s.id_servico = a.id_servico
+                WHERE s.id_profissional = ?
+                  AND (? = '' OR a.data = ?)
+                  AND (? = 'todos' OR a.status = ?)
+                ORDER BY a.data DESC, a.hora ASC
+                """,
+                (
+                    session["id_profissional"],
+                    data_filtro,
+                    data_filtro,
+                    status_filtro,
+                    status_filtro,
+                ),
+            ).fetchall()
+
+        finally:
+            conexao.close()
+
+    from datetime import datetime, timedelta
+
+    token = session.get("csrf_agenda")
+
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_agenda"] = token
+
+    agora = datetime.now()
+
+    finalizaveis = set()
+
+    for atendimento in agendamentos:
+        if atendimento[8] != "agendado":
+            continue
+
+        inicio = datetime.strptime(
+            f"{atendimento[1]} {atendimento[2]}",
+            "%Y-%m-%d %H:%M",
+        )
+
+        fim = inicio + timedelta(minutes=atendimento[6])
+
+        if agora >= fim:
+            finalizaveis.add(atendimento[0])
+
+    return render_template(
+        "agenda.html",
+        agendamentos=agendamentos,
+        data_filtro=data_filtro,
+        status_filtro=status_filtro,
+        erro=erro,
+        csrf_token=token,
+        finalizaveis=finalizaveis,
+    )
+
+
+# UC - Registrar conclusão ou falta no atendimento
+@app.route("/agenda/<int:id_agendamento>/situacao", methods=["POST"])
+@login_obrigatorio
+def alterar_situacao_agendamento(id_agendamento):
+    from datetime import datetime, timedelta
+    from flask import flash
+
+    token_esperado = session.get("csrf_agenda", "")
+    token_recebido = request.form.get("csrf_token", "")
+
+    if not token_esperado or not secrets.compare_digest(token_esperado, token_recebido):
+        return "Formulário inválido.", 400
+
+    nova_situacao = request.form.get("situacao", "")
+
+    if nova_situacao not in ("concluido", "falta"):
+        return "Situação inválida.", 400
+
+    conexao = conectar()
+
+    try:
+        conexao.execute("BEGIN IMMEDIATE")
+
+        agendamento = conexao.execute(
+            """
+            SELECT a.data, a.hora, a.duracao_minutos, a.status
+            FROM agendamento AS a
+            JOIN servico AS s
+                ON s.id_servico = a.id_servico
+            WHERE a.id_agendamento = ?
+              AND s.id_profissional = ?
+            """,
+            (id_agendamento, session["id_profissional"]),
+        ).fetchone()
+
+        if agendamento is None:
+            flash("Agendamento não encontrado.", "danger")
+
+        elif agendamento[3] != "agendado":
+            flash("Este agendamento não está ativo.", "danger")
+
+        else:
+            inicio = datetime.strptime(
+                f"{agendamento[0]} {agendamento[1]}",
+                "%Y-%m-%d %H:%M",
+            )
+
+            fim = inicio + timedelta(minutes=agendamento[2])
+
+            if datetime.now() < fim:
+                flash(
+                    "Aguarde o término previsto do atendimento.",
+                    "warning",
+                )
+            else:
+                conexao.execute(
+                    """
+                    UPDATE agendamento
+                    SET status = ?
+                    WHERE id_agendamento = ?
+                      AND status = 'agendado'
+                    """,
+                    (nova_situacao, id_agendamento),
+                )
+
+                conexao.commit()
+
+                flash(
+                    "Situação atualizada com sucesso!",
+                    "success",
+                )
+
+    finally:
+        conexao.close()
+
+    return redirect(url_for("agenda_profissional"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)
