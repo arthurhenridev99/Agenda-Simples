@@ -1596,4 +1596,4 @@ def marcar_notificacao_lida(id_notificacao):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
