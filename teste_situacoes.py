@@ -102,6 +102,13 @@ def testar_situacoes():
                     for id_agendamento in ids
                 ]
 
+            with closing(database.conectar()) as conexao:
+                notificacoes = [linha[0] for linha in conexao.execute("""
+                        SELECT tipo
+                        FROM notificacao
+                        ORDER BY id_notificacao
+                        """).fetchall()]
+
             esperado = [
                 "concluido",
                 "falta",
@@ -110,6 +117,13 @@ def testar_situacoes():
             ]
 
             assert resultados == esperado, resultados
+
+            assert notificacoes == [
+                "conclusao",
+                "falta",
+            ], notificacoes
+
+            print("Notificacoes de conclusao e falta: OK")
 
             print("TESTES APROVADOS!")
             print("Conclusao: OK")

@@ -2,10 +2,9 @@
 import secrets
 import sqlite3
 from functools import wraps
-
+from notificacoes import registrar_notificacao
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from database import conectar
 
 app = Flask(__name__)
@@ -1009,6 +1008,7 @@ def cancelar_agendamento():
     from datetime import datetime, timedelta
 
     from flask import flash
+    from notificacoes import registrar_notificacao
 
     token_esperado = session.get("csrf_consulta", "")
     token_recebido = request.form.get("csrf_token", "")
@@ -1026,7 +1026,6 @@ def cancelar_agendamento():
     conexao = conectar()
 
     try:
-        # Bloqueia alterações concorrentes durante o cancelamento.
         conexao.execute("BEGIN IMMEDIATE")
 
         agendamento = conexao.execute(
@@ -1034,7 +1033,7 @@ def cancelar_agendamento():
             SELECT a.id_agendamento, a.data, a.hora, a.status
             FROM agendamento AS a
             JOIN cliente AS c
-              ON c.id_cliente = a.id_cliente
+                ON c.id_cliente = a.id_cliente
             WHERE a.codigo_atendimento = ?
               AND c.telefone = ?
             """,
@@ -1060,6 +1059,7 @@ def cancelar_agendamento():
                     "O cancelamento exige pelo menos 4 horas de antecedência.",
                     "danger",
                 )
+
             else:
                 cursor = conexao.execute(
                     """
@@ -1072,13 +1072,24 @@ def cancelar_agendamento():
                 )
 
                 if cursor.rowcount == 1:
+                    registrar_notificacao(
+                        conexao,
+                        agendamento[0],
+                        "cancelamento",
+                    )
+
                     conexao.commit()
+
                     flash(
                         "Agendamento cancelado com sucesso!",
                         "success",
                     )
+
                 else:
-                    flash("Não foi possível cancelar.", "danger")
+                    flash(
+                        "Não foi possível cancelar.",
+                        "danger",
+                    )
 
     finally:
         conexao.close()
@@ -1373,6 +1384,7 @@ def alterar_situacao_agendamento(id_agendamento):
                     "Aguarde o término previsto do atendimento.",
                     "warning",
                 )
+
             else:
                 conexao.execute(
                     """
@@ -1382,6 +1394,12 @@ def alterar_situacao_agendamento(id_agendamento):
                       AND status = 'agendado'
                     """,
                     (nova_situacao, id_agendamento),
+                )
+
+                registrar_notificacao(
+                    conexao,
+                    id_agendamento,
+                    "conclusao" if nova_situacao == "concluido" else "falta",
                 )
 
                 conexao.commit()
@@ -1395,6 +1413,186 @@ def alterar_situacao_agendamento(id_agendamento):
         conexao.close()
 
     return redirect(url_for("agenda_profissional"))
+
+
+# UC - Consultar historico de atendimentos
+@app.route("/historico")
+@login_obrigatorio
+def historico_atendimentos():
+    from datetime import date
+
+    data_filtro = request.args.get("data", "").strip()
+    status_filtro = request.args.get("status", "todos")
+
+    status_validos = {"todos", "concluido", "cancelado", "falta"}
+
+    erro = None
+    historico = []
+
+    if status_filtro not in status_validos:
+        erro = "Situação inválida."
+
+    if data_filtro:
+        try:
+            data_validada = date.fromisoformat(data_filtro)
+
+            if data_validada.isoformat() != data_filtro:
+                raise ValueError
+
+        except ValueError:
+            erro = "Informe uma data válida."
+
+    if erro is None:
+        conexao = conectar()
+
+        try:
+            historico = conexao.execute(
+                """
+                SELECT
+                    a.id_agendamento,
+                    a.data,
+                    a.hora,
+                    c.nome,
+                    c.telefone,
+                    s.nome,
+                    a.duracao_minutos,
+                    a.preco_praticado,
+                    a.status
+                FROM agendamento AS a
+                JOIN cliente AS c
+                    ON c.id_cliente = a.id_cliente
+                JOIN servico AS s
+                    ON s.id_servico = a.id_servico
+                WHERE s.id_profissional = ?
+                  AND a.status IN (
+                      'concluido', 'cancelado', 'falta'
+                  )
+                  AND (? = '' OR a.data = ?)
+                  AND (? = 'todos' OR a.status = ?)
+                ORDER BY a.data DESC, a.hora DESC
+                """,
+                (
+                    session["id_profissional"],
+                    data_filtro,
+                    data_filtro,
+                    status_filtro,
+                    status_filtro,
+                ),
+            ).fetchall()
+
+        finally:
+            conexao.close()
+
+    return render_template(
+        "historico.html",
+        historico=historico,
+        data_filtro=data_filtro,
+        status_filtro=status_filtro,
+        erro=erro,
+    )
+
+
+# UC - Listar notificacoes da profissional
+@app.route("/notificacoes")
+@login_obrigatorio
+def listar_notificacoes():
+    token = session.get("csrf_notificacoes")
+
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf_notificacoes"] = token
+
+    conexao = conectar()
+
+    try:
+        notificacoes = conexao.execute(
+            """
+            SELECT
+                n.id_notificacao,
+                n.tipo,
+                n.data_hora,
+                n.visualizada,
+                c.nome,
+                s.nome,
+                a.data,
+                a.hora
+            FROM notificacao AS n
+            JOIN agendamento AS a
+                ON a.id_agendamento = n.id_agendamento
+            JOIN cliente AS c
+                ON c.id_cliente = a.id_cliente
+            JOIN servico AS s
+                ON s.id_servico = a.id_servico
+            WHERE s.id_profissional = ?
+            ORDER BY n.id_notificacao DESC
+            LIMIT 100
+            """,
+            (session["id_profissional"],),
+        ).fetchall()
+
+        nao_lidas = conexao.execute(
+            """
+            SELECT COUNT(*)
+            FROM notificacao AS n
+            JOIN agendamento AS a
+                ON a.id_agendamento = n.id_agendamento
+            JOIN servico AS s
+                ON s.id_servico = a.id_servico
+            WHERE s.id_profissional = ?
+              AND n.visualizada = 0
+            """,
+            (session["id_profissional"],),
+        ).fetchone()[0]
+
+    finally:
+        conexao.close()
+
+    return render_template(
+        "notificacoes.html",
+        notificacoes=notificacoes,
+        nao_lidas=nao_lidas,
+        csrf_token=token,
+    )
+
+
+# Marcar notificacao como lida
+@app.route(
+    "/notificacoes/<int:id_notificacao>/marcar-lida",
+    methods=["POST"],
+)
+@login_obrigatorio
+def marcar_notificacao_lida(id_notificacao):
+    token_esperado = session.get("csrf_notificacoes", "")
+    token_recebido = request.form.get("csrf_token", "")
+
+    if not token_esperado or not secrets.compare_digest(token_esperado, token_recebido):
+        return "Formulário inválido.", 400
+
+    conexao = conectar()
+
+    try:
+        conexao.execute(
+            """
+            UPDATE notificacao
+            SET visualizada = 1
+            WHERE id_notificacao = ?
+              AND id_agendamento IN (
+                  SELECT a.id_agendamento
+                  FROM agendamento AS a
+                  JOIN servico AS s
+                      ON s.id_servico = a.id_servico
+                  WHERE s.id_profissional = ?
+              )
+            """,
+            (id_notificacao, session["id_profissional"]),
+        )
+
+        conexao.commit()
+
+    finally:
+        conexao.close()
+
+    return redirect(url_for("listar_notificacoes"))
 
 
 if __name__ == "__main__":

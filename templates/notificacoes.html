@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notificações</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <main class="container py-5">
+
+        <h1>Notificações</h1>
+        <p class="text-muted">
+            Acompanhe as movimentações dos atendimentos.
+        </p>
+
+        <div class="alert alert-info">
+            Notificações não lidas:
+            <strong>{{ nao_lidas }}</strong>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <h4 class="mb-3">
+                    Notificações recentes
+                </h4>
+
+                {% if notificacoes %}
+
+                {% set rotulos = {
+                "novo_agendamento": "Novo agendamento",
+                "cancelamento": "Cancelamento",
+                "reagendamento": "Reagendamento",
+                "conclusao": "Atendimento concluído",
+                "falta": "Falta registrada"
+                } %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Registrada em</th>
+                                <th>Evento</th>
+                                <th>Cliente</th>
+                                <th>Serviço</th>
+                                <th>Atendimento</th>
+                                <th>Situação</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for notificacao in notificacoes %}
+                            <tr>
+                                <td>
+                                    {{ notificacao[2]|replace("T", " ") }}
+                                </td>
+
+                                <td>
+                                    {{ rotulos.get(
+                                    notificacao[1],
+                                    notificacao[1]
+                                    ) }}
+                                </td>
+
+                                <td>{{ notificacao[4] }}</td>
+                                <td>{{ notificacao[5] }}</td>
+
+                                <td>
+                                    {{ notificacao[6] }}
+                                    às {{ notificacao[7] }}
+                                </td>
+
+                                <td>
+                                    {% if notificacao[3] %}
+                                    <span class="badge bg-secondary">
+                                        Lida
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-primary">
+                                        Não lida
+                                    </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if not notificacao[3] %}
+                                    <form method="POST"
+                                        action="{{ url_for('marcar_notificacao_lida', id_notificacao=notificacao[0]) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                            Marcar como lida
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+                {% else %}
+
+                <div class="alert alert-info mb-0">
+                    Nenhuma notificação registrada.
+                </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+        <a href="{{ url_for('painel') }}" class="btn btn-secondary mt-3">
+            Voltar ao painel
+        </a>
+
+    </main>
+</body>
+
+</html>

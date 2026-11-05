@@ -1,7 +1,7 @@
 import re
 import secrets
 from datetime import date, datetime, timedelta
-
+from notificacoes import registrar_notificacao
 from database import conectar
 from disponibilidade import calcular_horarios_disponiveis
 
@@ -88,7 +88,7 @@ def registrar_agendamento(
         # Código único para consulta da reserva.
         codigo = secrets.token_hex(8).upper()
 
-        conexao.execute(
+        cursor = conexao.execute(
             """
             INSERT INTO agendamento (
                 id_cliente,
@@ -111,6 +111,14 @@ def registrar_agendamento(
                 servico[0],
                 servico[1],
             ),
+        )
+
+        id_agendamento = cursor.lastrowid
+
+        registrar_notificacao(
+            conexao,
+            id_agendamento,
+            "novo_agendamento",
         )
 
         conexao.commit()
@@ -207,6 +215,12 @@ def reagendar_agendamento(id_agendamento, data_nova, hora_nova):
 
         if cursor.rowcount != 1:
             raise ValueError("Não foi possível reagendar o atendimento.")
+
+        registrar_notificacao(
+            conexao,
+            id_agendamento,
+            "reagendamento",
+        )
 
         conexao.commit()
         return True
