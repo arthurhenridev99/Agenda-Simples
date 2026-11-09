@@ -1,60 +1,21 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Painel Administrativo</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-
-<body class="bg-light">
-
-    <main class="container py-5">
-
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-
-                <h1>Painel Administrativo</h1>
-
-                <p class="lead">
-                    Bem-vinda, {{ nome }}!
-                </p>
-
-                <div class="alert alert-success">
-                    Login realizado com sucesso.
-                </div>
-
-                <p>
-                    Esta é a área administrativa protegida
-                    do sistema de agendamentos.
-                </p>
-
-                <form action="/sair" method="POST">
-                    <a href="{{ url_for('agenda_profissional') }}" class="btn btn-primary mb-3">
-                        Ver Agenda de Atendimentos
-                    </a>
-
-                    <a href="{{ url_for('historico_atendimentos') }}" class="btn btn-outline-primary mb-3">
-                        Ver Histórico de Atendimentos
-                    </a>
-
-                    <a href="{{ url_for('listar_notificacoes') }}" class="btn btn-outline-primary mb-3">
-                        Ver Notificações
-                    </a>
-
-                    <button type="submit" class="btn btn-outline-danger">
-                        Sair da conta
-                    </button>
-                </form>
-
-            </div>
-        </div>
-
-    </main>
-
-</body>
-
-</html>
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SEU DIA, ORGANIZADO</p><h1>Dashboard</h1><p class="text-muted">Bem-vinda, {{ nome }}. Vamos cuidar da sua agenda?</p></div><a class="btn btn-primary" href="{{ url_for('agenda_profissional', data=dia.isoformat()) }}">Ver agenda do dia ↗</a></div>
+{% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
+{% if not servicos_ativos or not periodos %}
+<section class="welcome-card"><span class="welcome-spark" aria-hidden="true">✦</span><div><h2>Vamos preparar sua agenda online</h2><p>Cadastre seus serviços e defina os períodos de atendimento para receber agendamentos.</p><div class="d-flex gap-2 flex-wrap"><a class="btn btn-primary" href="{{ url_for('listar_servicos') }}">{{ '✓' if servicos_ativos else '1.' }} Seus serviços</a><a class="btn btn-outline-primary" href="{{ url_for('listar_horarios') }}">{{ '✓' if periodos else '2.' }} Seus horários</a></div></div></section>
+{% endif %}
+<section class="card updates"><div class="section-heading"><h2>Últimas novidades</h2><a href="{{ url_for('listar_notificacoes') }}">Ver notificações →</a></div>
+{% set eventos = {'novo_agendamento':'Novo agendamento', 'cancelamento':'Cancelamento', 'reagendamento':'Reagendamento', 'conclusao':'Atendimento concluído', 'falta':'Falta registrada'} %}
+{% for aviso in avisos %}<div class="update-row"><span class="notification-dot" aria-hidden="true"></span><div><strong>{{ eventos.get(aviso[0], aviso[0]) }}</strong><p>{{ aviso[1] }} <span class="text-muted">· {{ aviso[2][8:10] }}/{{ aviso[2][5:7] }}/{{ aviso[2][:4] }} às {{ aviso[3] }}</span></p></div></div>{% else %}<p class="quiet-state">Tudo em dia. Nenhuma notificação pendente.</p>{% endfor %}</section>
+<form class="date-bar" method="GET"><a class="date-arrow" aria-label="Dia anterior" href="{{ url_for('painel', data=anterior or dia.isoformat()) }}">‹</a><div><label for="dia-dashboard">Agenda do dia</label><input id="dia-dashboard" type="date" name="data" value="{{ dia.isoformat() }}" required><button class="btn btn-sm btn-outline-primary" type="submit">Ver dia</button></div><a class="date-arrow" aria-label="Próximo dia" href="{{ url_for('painel', data=proximo or dia.isoformat()) }}">›</a></form>
+<section class="stats" aria-label="Resumo do dia">
+{% for valor, label, tipo, icon in [(atendimentos|length,'Total de atendimentos','purple','◷'),(totais['concluido'],'Concluídos','green','✓'),(totais['cancelado'],'Cancelados','rose','×'),(totais['falta'],'Faltas','amber','–')] %}<article class="stat-card"><span class="stat-icon {{ tipo }}" aria-hidden="true">{{ icon }}</span><strong>{{ valor }}</strong><span>{{ label }}</span></article>{% endfor %}
+</section>
+<section class="card daily"><div class="section-heading"><div><h2>Atendimentos do dia</h2><p class="text-muted">{{ totais['agendado'] }} agendado(s) para esta data</p></div><a href="{{ url_for('agenda_profissional', data=dia.isoformat()) }}">Gerenciar →</a></div>
+{% set rotulos = {'agendado':'Agendado', 'concluido':'Concluído', 'cancelado':'Cancelado', 'falta':'Falta'} %}
+{% for atendimento in atendimentos %}<article class="appointment"><span class="avatar" aria-hidden="true">{{ atendimento[1][:1]|upper }}</span><div class="appointment-client"><strong>{{ atendimento[1] }}</strong><span>{{ atendimento[2] }} · {{ atendimento[4] }} min</span></div><strong class="appointment-time">{{ atendimento[0] }}</strong><span class="status status-{{ atendimento[3] }}">{{ rotulos[atendimento[3]] }}</span></article>
+{% else %}<div class="empty-state"><span aria-hidden="true">▦</span><h3>Um espaço livre na sua agenda</h3><p>Nenhum atendimento nesta data. Consulte outros dias ou confira seus horários.</p><a class="btn btn-outline-primary" href="{{ url_for('listar_horarios') }}">Consultar horários</a></div>{% endfor %}
+</section>
+{% endblock %}

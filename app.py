@@ -126,7 +126,51 @@ def login():
 @app.route("/painel")
 @login_obrigatorio
 def painel():
-    return render_template("painel.html", nome=session["nome_profissional"])
+    from datetime import date, timedelta
+
+    erro = None
+    try:
+        dia = date.fromisoformat(request.args.get("data", date.today().isoformat()))
+    except ValueError:
+        dia = date.today()
+        erro = "Data inválida. Exibindo a agenda de hoje."
+    conexao = conectar()
+    try:
+        atendimentos = conexao.execute(
+            """SELECT a.hora, c.nome, s.nome, a.status, a.duracao_minutos
+               FROM agendamento a JOIN cliente c ON c.id_cliente = a.id_cliente
+               JOIN servico s ON s.id_servico = a.id_servico
+               WHERE s.id_profissional = ? AND a.data = ? ORDER BY a.hora""",
+            (session["id_profissional"], dia.isoformat()),
+        ).fetchall()
+        avisos = conexao.execute(
+            """SELECT n.tipo, c.nome, a.data, a.hora FROM notificacao n
+               JOIN agendamento a ON a.id_agendamento = n.id_agendamento
+               JOIN cliente c ON c.id_cliente = a.id_cliente
+               JOIN servico s ON s.id_servico = a.id_servico
+               WHERE s.id_profissional = ? AND n.visualizada = 0
+               ORDER BY n.id_notificacao DESC LIMIT 3""",
+            (session["id_profissional"],),
+        ).fetchall()
+        servicos_ativos = conexao.execute(
+            "SELECT COUNT(*) FROM servico WHERE id_profissional = ? AND ativo = 1",
+            (session["id_profissional"],),
+        ).fetchone()[0]
+        periodos = conexao.execute(
+            "SELECT COUNT(*) FROM horario_atendimento WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()[0]
+    finally:
+        conexao.close()
+    totais = {status: sum(a[3] == status for a in atendimentos)
+              for status in ("agendado", "concluido", "cancelado", "falta")}
+    return render_template(
+        "painel.html", nome=session["nome_profissional"], atendimentos=atendimentos,
+        totais=totais, avisos=avisos, dia=dia, erro=erro,
+        anterior=(dia - timedelta(days=1)).isoformat() if dia > date.min else None,
+        proximo=(dia + timedelta(days=1)).isoformat() if dia < date.max else None,
+        servicos_ativos=servicos_ativos, periodos=periodos,
+    )
 
 
 # Encerrar sessão
@@ -1597,3 +1641,4 @@ def marcar_notificacao_lida(id_notificacao):
 
 if __name__ == "__main__":
     app.run(debug=False)
+
