@@ -68,7 +68,7 @@ hr {
   font-weight:800;
   font-size:19px;
   letter-spacing:-.6px}
-.brand>span:last-child {
+.brand>span:not(.brand-icon) {
   font-weight:500;
   font-size:13px;
   letter-spacing:0}
@@ -592,7 +592,7 @@ hr {
 .brand {
   font-size:17px;
   gap:6px}
-.brand>span:last-child {
+.brand>span:not(.brand-icon) {
   font-size:11px}
 .page-content {
   padding:25px}
@@ -743,3 +743,19 @@ h1 {
   transition:none!important}
 }
 
+
+/* Cadastro e recuperação de acesso — AgendaSimples. */
+.auth-intro { text-align: center; margin-bottom: 28px; }
+.auth-intro h1 { color: var(--purple); font-size: 30px; line-height: 1.2; }
+.auth-card .card-body { padding: 30px; }
+.page-esqueci_minha_senha .page-content,
+.page-redefinir_senha .page-content { max-width: 520px; padding-top: 64px; }
+.password-field { position: relative; }
+.password-field input { padding-right: 84px; }
+.password-toggle { position: absolute; right: 4px; top: 3px; min-height: 40px; padding: 6px 10px; border: 0; background: transparent; color: var(--purple-dark); font-size: 12px; border-radius: 6px; }
+.password-toggle[hidden] { display: none; }
+@media (max-width: 760px) {
+  .page-esqueci_minha_senha .page-content,
+  .page-redefinir_senha .page-content { padding-top: 30px; }
+  .auth-card .card-body { padding: 24px; }
+}

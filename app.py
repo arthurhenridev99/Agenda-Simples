@@ -29,59 +29,60 @@ def inicio():
     return render_template("index.html")
 
 
-# UC09 - Realizar Cadastro
+# UC09 - Cadastro da profissional
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
-    erro = None
-    sucesso = None
+    import re
+    from database import atualizar_cadastro_profissional
+    from recuperacao import email_valido
 
+    erro = sucesso = None
+    token = session.setdefault("csrf_cadastro", secrets.token_urlsafe(32))
     conexao = conectar()
-
     try:
-        profissional = conexao.execute(
-            "SELECT id_profissional FROM profissional LIMIT 1"
-        ).fetchone()
-
-        if profissional:
-            return render_template("cadastro.html", cadastro_existente=True)
-
+        atualizar_cadastro_profissional(conexao)
         if request.method == "POST":
             nome = request.form.get("nome", "").strip()
-            login_informado = request.form.get("login", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            whatsapp = re.sub(r"\D", "", request.form.get("whatsapp", ""))
             senha = request.form.get("senha", "")
             confirmar_senha = request.form.get("confirmar_senha", "")
-
-            if not nome or not login_informado or not senha:
-                erro = "Preencha todos os campos obrigatórios."
-
-            elif len(senha) < 8:
-                erro = "A senha deve possuir pelo menos 8 caracteres."
-
+            if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+                erro = "Formulário inválido. Atualize a página e tente novamente."
+            elif not nome or len(nome) > 100:
+                erro = "Informe seu nome completo, com até 100 caracteres."
+            elif not email_valido(email):
+                erro = "Informe um e-mail válido."
+            elif len(whatsapp) not in (10, 11):
+                erro = "Informe o WhatsApp com DDD, usando 10 ou 11 dígitos."
+            elif not 8 <= len(senha) <= 128:
+                erro = "A senha deve possuir entre 8 e 128 caracteres."
             elif senha != confirmar_senha:
                 erro = "As senhas informadas não coincidem."
-
             else:
-                senha_hash = generate_password_hash(senha)
-
+                # O campo login armazena o e-mail nas novas contas.
+                # Contas antigas continuam aceitando seu login original.
                 try:
-                    conexao.execute(
-                        """
-                        INSERT INTO profissional (nome, login, senha_hash)
-                        VALUES (?, ?, ?)
-                        """,
-                        (nome, login_informado, senha_hash),
-                    )
-                    conexao.commit()
-                    sucesso = "Cadastro realizado com sucesso!"
-
+                    conexao.execute("BEGIN IMMEDIATE")
+                    existente = conexao.execute(
+                        "SELECT 1 FROM profissional WHERE lower(login) = ?", (email,)
+                    ).fetchone()
+                    if existente:
+                        erro = "Não foi possível criar a conta com este e-mail. Entre ou recupere sua senha."
+                        conexao.rollback()
+                    else:
+                        conexao.execute(
+                            "INSERT INTO profissional (nome, login, senha_hash, whatsapp) VALUES (?, ?, ?, ?)",
+                            (nome, email, generate_password_hash(senha), whatsapp),
+                        )
+                        conexao.commit()
+                        sucesso = "Conta criada com sucesso! Entre com seu e-mail e senha."
                 except sqlite3.IntegrityError:
                     conexao.rollback()
-                    erro = "Não foi possível realizar o cadastro. Verifique o login."
-
+                    erro = "Não foi possível criar a conta com este e-mail."
     finally:
         conexao.close()
-
-    return render_template("cadastro.html", erro=erro, sucesso=sucesso)
+    return render_template("cadastro.html", erro=erro, sucesso=sucesso, csrf_token=token)
 
 
 # UC10 - Realizar Login
@@ -94,6 +95,8 @@ def login():
 
     if request.method == "POST":
         login_informado = request.form.get("login", "").strip()
+        if "@" in login_informado:
+            login_informado = login_informado.lower()
         senha = request.form.get("senha", "")
 
         conexao = conectar()
@@ -120,6 +123,98 @@ def login():
         erro = "Login ou senha inválidos."
 
     return render_template("login.html", erro=erro)
+
+
+@app.route("/esqueci-minha-senha", methods=["GET", "POST"])
+def esqueci_minha_senha():
+    import time
+    import smtplib
+    from recuperacao import email_valido, configuracao_email, gerar_token, enviar_recuperacao
+
+    token = session.setdefault("csrf_recuperacao", secrets.token_urlsafe(32))
+    erro = sucesso = None
+    status = 200
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        config = configuracao_email()
+        if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+            erro, status = "Formulário inválido. Atualize a página.", 400
+        elif not email_valido(email):
+            erro = "Informe um e-mail válido."
+        elif config is None:
+            erro, status = "A recuperação por e-mail está temporariamente indisponível. Tente novamente mais tarde.", 503
+        elif time.time() - session.get("ultima_recuperacao", 0) < 60:
+            erro, status = "Aguarde um minuto antes de solicitar outro link.", 429
+        else:
+            session["ultima_recuperacao"] = time.time()
+            conexao = conectar()
+            try:
+                profissional = conexao.execute(
+                    "SELECT id_profissional, senha_hash, login FROM profissional WHERE lower(login) = ?",
+                    (email,),
+                ).fetchone()
+            finally:
+                conexao.close()
+            sucesso = "Se este e-mail estiver cadastrado, você receberá um link para redefinir sua senha. Confira também o spam."
+            if profissional:
+                try:
+                    enviar_recuperacao(profissional[2], url_for("redefinir_senha", token=gerar_token(profissional)), config)
+                except (OSError, smtplib.SMTPException):
+                    # Não expõe conta, token ou credenciais na resposta/log.
+                    app.logger.error("Falha no envio de recuperação por SMTP.")
+    resposta = app.make_response((render_template("esqueci_senha.html", erro=erro, sucesso=sucesso, csrf_token=token), status))
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
+@app.route("/redefinir-senha/<token>", methods=["GET", "POST"])
+def redefinir_senha(token):
+    from itsdangerous import BadSignature, SignatureExpired
+    from recuperacao import serializador, assinatura_senha
+
+    erro = None
+    valido = False
+    sucesso = False
+    csrf = session.setdefault("csrf_redefinicao", secrets.token_urlsafe(32))
+    conexao = conectar()
+    try:
+        try:
+            dados = serializador().loads(token, max_age=1800)
+            profissional = conexao.execute(
+                "SELECT id_profissional, senha_hash FROM profissional WHERE id_profissional = ?",
+                (dados["id"],),
+            ).fetchone()
+            valido = bool(profissional and secrets.compare_digest(dados["senha"], assinatura_senha(profissional[1])))
+        except (BadSignature, SignatureExpired, KeyError, TypeError):
+            valido = False
+        if not valido:
+            erro = "Este link é inválido, expirou ou já foi utilizado. Solicite um novo link."
+        elif request.method == "POST":
+            senha = request.form.get("senha", "")
+            if not secrets.compare_digest(csrf, request.form.get("csrf_token", "")):
+                erro = "Formulário inválido. Atualize a página."
+            elif not 8 <= len(senha) <= 128:
+                erro = "A senha deve possuir entre 8 e 128 caracteres."
+            elif senha != request.form.get("confirmar_senha", ""):
+                erro = "As senhas informadas não coincidem."
+            else:
+                resultado = conexao.execute(
+                    "UPDATE profissional SET senha_hash = ? WHERE id_profissional = ? AND senha_hash = ?",
+                    (generate_password_hash(senha), profissional[0], profissional[1]),
+                )
+                conexao.commit()
+                if resultado.rowcount == 1:
+                    session.clear()
+                    sucesso = True
+                else:
+                    valido = False
+                    erro = "Este link já foi utilizado. Solicite um novo link."
+    finally:
+        conexao.close()
+    resposta = app.make_response(render_template("redefinir_senha.html", erro=erro, valido=valido, sucesso=sucesso, csrf_token=csrf))
+    resposta.headers["Referrer-Policy"] = "no-referrer"
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
 
 
 # Painel administrativo protegido

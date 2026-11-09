@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}PTDS Agendamento{% endblock %} · PTDS</title>
+  <title>{% block title %}AgendaSimples{% endblock %} · AgendaSimples</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 {% set admin = request.endpoint in ['painel', 'agenda_profissional', 'historico_atendimentos', 'listar_servicos', 'editar_servico', 'listar_horarios', 'editar_horario', 'listar_bloqueios', 'listar_notificacoes'] %}
@@ -11,7 +11,7 @@
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 {% if admin %}
 <aside class="sidebar">
-  <a class="brand" href="{{ url_for('painel') }}"><span class="brand-icon" aria-hidden="true">✦</span> PTDS<span>Agendamento</span></a>
+  <a class="brand" href="{{ url_for('painel') }}"><span class="brand-icon" aria-hidden="true">✦</span> AgendaSimples</a>
   <div class="profile"><span class="avatar">{{ session.get('nome_profissional', 'P')[:1]|upper }}</span><div><small>Bem-vinda,</small><strong>{{ session.get('nome_profissional', 'Profissional') }}</strong></div></div>
   <details class="mobile-menu" open><summary>Menu de navegação</summary>
   <nav aria-label="Menu principal">
@@ -29,14 +29,14 @@
   <div class="sidebar-bottom"><a class="btn btn-outline-primary" href="{{ url_for('inicio') }}">Ver página pública ↗</a><form method="POST" action="{{ url_for('sair') }}"><button class="logout" type="submit">Sair da conta</button></form><small>Seu tempo, bem cuidado.</small></div>
 </aside>
 {% else %}
-<header class="public-header"><a class="brand" href="{{ url_for('inicio') }}"><span class="brand-icon" aria-hidden="true">✦</span> PTDS<span>Agendamento</span></a><nav aria-label="Navegação pública"><a href="{{ url_for('consultar_disponibilidade') }}">Agendar</a><a href="{{ url_for('consultar_agendamento') }}">Consultar reserva</a><a class="btn btn-outline-primary" href="{{ url_for('painel') if session.get('id_profissional') else url_for('login') }}">Área profissional</a></nav></header>
+<header class="public-header"><a class="brand" href="{{ url_for('inicio') }}"><span class="brand-icon" aria-hidden="true">✦</span> AgendaSimples</a><nav aria-label="Navegação pública"><a href="{{ url_for('consultar_disponibilidade') }}">Agendar</a><a href="{{ url_for('consultar_agendamento') }}">Consultar reserva</a><a class="btn btn-outline-primary" href="{{ url_for('painel') if session.get('id_profissional') else url_for('login') }}">Área profissional</a></nav></header>
 {% endif %}
 <div class="workspace">
 {% if admin %}<header class="topbar"><span>Minha agenda <span class="text-muted">/ Área profissional</span></span><a href="{{ url_for('listar_notificacoes') }}">Notificações ↗</a></header>{% endif %}
 <main id="conteudo" tabindex="-1" class="page-content">
 {% with mensagens = get_flashed_messages(with_categories=true) %}{% for categoria, mensagem in mensagens %}<div class="alert alert-{{ categoria }}" role="status">{{ mensagem }}</div>{% endfor %}{% endwith %}
 {% block content %}{% endblock %}
-</main><footer class="page-footer">PTDS Agendamento <span>•</span> Manicure &amp; pedicure</footer>
+</main><footer class="page-footer">AgendaSimples <span>•</span> Manicure &amp; pedicure</footer>
 </div>
 </body>
 </html>

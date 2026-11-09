@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Redefinir senha{% endblock %}
+{% block content %}
+<div class="auth-intro"><h1>Nova senha</h1></div>
+<section class="card auth-card"><div class="card-body">
+  {% if sucesso %}
+  <div class="alert alert-success" role="status">Senha alterada com sucesso! Entre com sua nova senha.</div>
+  <a class="btn btn-primary w-100" href="{{ url_for('login') }}">Entrar</a>
+  {% else %}
+  {% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
+  {% if valido %}
+  <p class="text-muted">Crie uma senha com 8 a 128 caracteres.</p>
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="mb-3"><label for="senha">Nova senha</label><div class="password-field"><input id="senha" name="senha" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="128" required><button type="button" class="password-toggle" data-password="senha" aria-label="Mostrar nova senha" aria-pressed="false" hidden>Mostrar</button></div></div>
+    <div class="mb-3"><label for="confirmar_senha">Confirmar nova senha</label><div class="password-field"><input id="confirmar_senha" name="confirmar_senha" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="128" required><button type="button" class="password-toggle" data-password="confirmar_senha" aria-label="Mostrar confirmação de senha" aria-pressed="false" hidden>Mostrar</button></div></div>
+    <button type="submit" class="btn btn-primary w-100">Salvar nova senha</button>
+  </form>
+  {% else %}<a class="btn btn-primary w-100" href="{{ url_for('esqueci_minha_senha') }}">Solicitar novo link</a>{% endif %}
+  <a class="d-block text-center mt-3" href="{{ url_for('login') }}">Voltar para o login</a>
+  {% endif %}
+</div></section>
+<script src="{{ url_for('static', filename='js/senhas.js') }}" defer></script>
+{% endblock %}

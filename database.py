@@ -11,6 +11,19 @@ def conectar():
     return conexao
 
 
+def atualizar_cadastro_profissional(conexao):
+    """Migração aditiva: preserva contas e dados de bancos já existentes."""
+    conexao.execute("BEGIN IMMEDIATE")
+    try:
+        colunas = {linha[1] for linha in conexao.execute("PRAGMA table_info(profissional)")}
+        if "whatsapp" not in colunas:
+            conexao.execute("ALTER TABLE profissional ADD COLUMN whatsapp TEXT NOT NULL DEFAULT ''")
+        conexao.commit()
+    except Exception:
+        conexao.rollback()
+        raise
+
+
 def inicializar_banco():
     with conectar() as conexao:
 
@@ -23,6 +36,8 @@ def inicializar_banco():
                 senha_hash TEXT NOT NULL
             )
         """)
+
+        atualizar_cadastro_profissional(conexao)
 
         # Tabela 2 - Servicos
         conexao.execute("""
@@ -121,3 +136,4 @@ def inicializar_banco():
 
 if __name__ == "__main__":
     inicializar_banco()
+
