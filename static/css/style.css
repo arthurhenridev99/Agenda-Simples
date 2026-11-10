@@ -759,3 +759,76 @@ h1 {
   .page-redefinir_senha .page-content { padding-top: 30px; }
   .auth-card .card-body { padding: 24px; }
 }
+
+
+/* Jornada pública de agendamento: mantém a paleta e componentes atuais. */
+.page-consultar_disponibilidade .page-content {max-width:100%;padding:0 0 42px}
+.salon-hero {background:linear-gradient(120deg,#8869c6,#7637c8);color:white;text-align:center;padding:38px 16px 44px}
+.salon-logo {width:90px;height:90px;margin:0 auto 20px;background:#fff;color:var(--purple);border-radius:18px;display:grid;place-items:center;font-size:46px}
+.salon-hero h1 {font-size:32px;margin-bottom:8px}
+.salon-hero>p {color:#f4e9ff;font-size:17px}
+.salon-details {max-width:410px;margin:24px auto 0;border:1px solid #ffffff44;border-radius:18px;padding:24px;background:#ffffff12}
+.salon-details>p {margin:0 0 14px}
+.salon-socials {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;border-top:1px solid #ffffff44;padding-top:18px}
+.salon-social {background:#ffffff22;border:0;color:white;border-radius:10px;padding:11px}
+.salon-social:hover {background:#ffffff33}
+.mvp-notice {padding:12px;margin-top:14px!important;background:#ffffff22;border-radius:10px}
+.booking-flow {max-width:610px;margin:30px auto;text-align:center;padding:0 16px}
+.booking-flow>h1,.booking-flow>h2,.booking-date-section>h2 {margin:24px 0 10px}
+.booking-stage {display:inline-flex;align-items:center;gap:14px;padding:14px 22px;background:white;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);font-size:17px;font-weight:650}
+.booking-stage>span {display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(120deg,#8b50df,#b66bf1);color:white}
+.booking-progress {display:flex;justify-content:space-around;position:relative;margin:30px auto 46px;max-width:430px}
+.booking-progress:before {content:'';height:3px;background:#e5ddef;position:absolute;left:14%;right:14%;top:16px}
+.booking-progress>span {position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#ece9f2;color:#777;font-weight:700}
+.booking-progress>span.current {background:#9c54e4;color:white}
+.booking-progress>span.done {background:#20b884;color:white}
+.booking-progress small {position:absolute;top:40px;color:var(--muted);font-weight:500}
+.service-list {display:grid;gap:14px;margin-top:28px;text-align:left}
+.service-choice {padding:22px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.service-choice h3 {margin:0 0 6px}
+.service-choice p {margin:0}
+.service-action {display:grid;justify-items:end;gap:10px;white-space:nowrap}
+.service-action strong {color:var(--purple);font-size:18px}
+.booking-date-section {margin-top:46px;scroll-margin-top:24px}
+.booking-date-section .booking-stage {margin-bottom:20px}
+.booking-summary {background:#f5f1ff;border:1px solid #e4d9f4;border-radius:14px;padding:20px;margin:20px auto 30px;color:#7353a1}
+.booking-summary p {margin:5px 0}
+.calendar-card,.time-card {max-width:450px;margin:22px auto;padding:24px}
+.calendar-heading {display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.calendar-heading h3 {margin:0}
+.calendar-heading button {background:transparent;border:0;font-size:28px;color:var(--ink);padding:0 10px}
+.calendar-heading button:disabled {opacity:.25;cursor:not-allowed}
+.calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.calendar-weekday {font-size:11px;color:var(--muted);padding:10px 0}
+.calendar-day {border:0;border-radius:9px;background:transparent;min-height:40px;color:var(--ink)}
+.calendar-day:hover:not(:disabled) {background:#f0e6ff}
+.calendar-day.selected {background:var(--purple);color:white}
+.calendar-day:disabled {color:#cfcbd4;cursor:not-allowed}
+.time-card {text-align:left}
+.time-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.time-slot {display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fbfaff;color:var(--ink);font-weight:600}
+.time-slot:hover {background:var(--purple);color:white;text-decoration:none}
+.confirmation-flow .booking-review {text-align:left;margin:28px 0}
+.booking-review h2 {color:var(--purple);margin-bottom:16px}
+.booking-review>div {display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #ded5ea}
+.booking-review>div:last-child {border:0}
+.booking-review>div strong {text-align:right;color:var(--ink)}
+.booking-review .booking-total strong {color:var(--purple);font-size:20px}
+.booking-customer-form {text-align:left}
+.booking-customer-form small {display:block;margin-top:6px}
+.booking-confirmed {max-width:610px;margin:0 auto;text-align:center;padding:32px 16px}
+.page-agendamento_confirmado .page-content {background:#f0fff6;max-width:none}
+.confirmed-check {display:grid;place-items:center;margin:0 auto 20px;width:90px;height:90px;border-radius:50%;background:#24b883;color:white;font-size:48px}
+.confirmed-details {padding:28px;text-align:left;margin:28px 0}
+.confirmed-details>div:not(.confirmed-code) {display:flex;gap:16px;align-items:flex-start;margin-bottom:18px}
+.confirmed-details p {margin:0}
+.confirmed-details p strong,.confirmed-details p span {display:block}
+.confirmed-details p span {color:var(--muted)}
+.confirmed-details .confirmed-price {color:#169769;font-size:19px;font-weight:750}
+.confirmed-icon {display:grid;place-items:center;flex:0 0 42px;height:42px;background:#f4edfd;color:var(--purple);border-radius:12px;font-size:22px}
+.confirmed-code {background:#f5f1ff;border-radius:12px;padding:16px;text-align:center}
+.confirmed-code span {font-size:22px;font-weight:750;letter-spacing:1px;overflow-wrap:anywhere}
+.confirmed-code small {display:block;color:var(--muted)}
+.confirmed-actions {display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.confirmed-actions .new-booking {grid-column:1/-1}
+@media(max-width:600px) {.salon-hero h1{font-size:27px}.service-choice{padding:16px}.service-action strong{font-size:15px}.calendar-card,.time-card{padding:15px}.calendar-grid{gap:2px}.calendar-day{min-height:36px}.confirmed-details{padding:18px}}
