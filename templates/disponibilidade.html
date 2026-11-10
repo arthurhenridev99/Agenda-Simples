@@ -31,7 +31,7 @@
   {% for servico in servicos %}
     <article class="card service-choice">
       <div><h3>{{ servico[1] }}</h3><p class="text-muted">◷ {{ servico[3] }} min</p></div>
-      <div class="service-action"><strong>R$ {{ "%.2f"|format(servico[2]) }}</strong><a class="btn btn-primary" href="{{ url_for('consultar_disponibilidade', servico=servico[0]) }}#escolher-data">Agendar ›</a></div>
+      <div class="service-action"><strong>R$ {{ "%.2f"|format(servico[2]) }}</strong><a class="btn btn-primary service-book-link" href="{{ url_for('consultar_disponibilidade', servico=servico[0]) }}#escolher-data">Agendar ›</a></div>
     </article>
   {% else %}
     <div class="card card-body">Nenhum serviço disponível no momento.</div>
@@ -72,6 +72,36 @@
 </section>
 <script>
 (function () {
+  document.querySelectorAll('.service-book-link').forEach(link=>{
+    link.addEventListener('click',async event=>{
+      event.preventDefault();
+      if(link.dataset.loading==='true')return;
+      link.dataset.loading='true';
+      const url=new URL(link.href);
+      try{
+        const response=await fetch(url.pathname+url.search,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+        if(!response.ok)throw new Error('Falha ao selecionar serviço');
+        const doc=new DOMParser().parseFromString(await response.text(),'text/html');
+        const next=doc.querySelector('#escolher-data');
+        if(!next)throw new Error('Calendário não encontrado');
+        const current=document.getElementById('escolher-data');
+        if(current)current.replaceWith(next);
+        else document.querySelector('.booking-flow').append(next);
+        const nextProgress=doc.querySelector('.booking-progress');
+        const currentProgress=document.querySelector('.booking-progress');
+        if(nextProgress&&currentProgress)currentProgress.replaceWith(nextProgress);
+        history.pushState(null,'',url.pathname+url.search);
+        // Recarrega apenas a configuração do calendário para o novo serviço.
+        initCalendar();
+        requestAnimationFrame(()=>next.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));
+      }catch(error){
+        window.location.assign(link.href);
+      }finally{
+        delete link.dataset.loading;
+      }
+    });
+  });
+  function initCalendar(){
   const form=document.getElementById('date-form'); if(!form)return;
   const field=document.getElementById('data'), grid=document.getElementById('calendar-grid');
   const title=document.getElementById('calendar-month'), min="{{ data_minima }}";
@@ -118,6 +148,8 @@
   render();
   const selected=document.getElementById('selected-date');
   if(selected&&field.value){const [y,m,d]=field.value.split('-');selected.textContent=d+'/'+m+'/'+y}
+  }
+  initCalendar();
 })();
 </script>
 {% endblock %}
