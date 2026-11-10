@@ -59,9 +59,10 @@
       {% if horarios %}
       <div class="time-grid">
         {% for horario in horarios %}
-          <a href="{{ url_for('agendar', servico=servico_selecionado, data=data_selecionada, hora=horario) }}" class="time-slot">{{ horario }}</a>
+          <button type="button" class="time-slot" data-hora="{{ horario }}" data-destino="{{ url_for('agendar', servico=servico_selecionado, data=data_selecionada, hora=horario) }}" aria-pressed="false">{{ horario }}</button>
         {% endfor %}
       </div>
+      <button type="button" class="btn btn-primary w-100 continue-time" disabled>Selecione um horário para continuar</button>
       {% else %}
       <p class="alert alert-warning">Nenhum horário disponível para esta data. Escolha outro dia.</p>
       {% endif %}
@@ -72,6 +73,26 @@
 </section>
 <script>
 (function () {
+  document.addEventListener('click',event=>{
+    const slot=event.target.closest('.time-slot');
+    if(slot){
+      const card=slot.closest('.time-card');
+      card.querySelectorAll('.time-slot').forEach(item=>{
+        const selected=item===slot;
+        item.classList.toggle('selected',selected);
+        item.setAttribute('aria-pressed',String(selected));
+      });
+      const continueButton=card.querySelector('.continue-time');
+      continueButton.disabled=false;
+      continueButton.dataset.destino=slot.dataset.destino;
+      continueButton.textContent='Continuar com '+slot.dataset.hora;
+      return;
+    }
+    const continueButton=event.target.closest('.continue-time');
+    if(continueButton&&!continueButton.disabled&&continueButton.dataset.destino){
+      window.location.assign(continueButton.dataset.destino);
+    }
+  });
   document.querySelectorAll('.service-book-link').forEach(link=>{
     link.addEventListener('click',async event=>{
       event.preventDefault();
