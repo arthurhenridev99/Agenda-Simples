@@ -4,13 +4,13 @@
 <div class="auth-intro"><h1>Recuperar código</h1><p class="text-muted">Informe o WhatsApp usado no agendamento.</p></div>
 <section class="card auth-card"><div class="card-body">
   <h2>Esqueci meu código</h2>
-  <p class="text-muted">Se houver uma reserva ativa associada ao número, enviaremos o código pelo WhatsApp.</p>
+  <p class="text-muted">Informe seu número para demonstrar a solicitação de recuperação do código.</p>
   {% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
-  {% if sucesso %}<div class="alert alert-success" role="status">{{ sucesso }}</div>{% endif %}
+  {% if aviso %}<div class="alert alert-info" role="status">{{ aviso }}</div>{% endif %}
   <form method="POST">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="mb-3"><label for="telefone">WhatsApp com DDD</label><input type="tel" id="telefone" name="telefone" class="form-control" autocomplete="tel" inputmode="tel" placeholder="62999999999" maxlength="20" required></div>
-    <button type="submit" class="btn btn-primary w-100">Enviar código pelo WhatsApp</button>
+    <button type="submit" class="btn btn-primary w-100">Solicitar código</button>
   </form>
   <a class="d-block text-center mt-3" href="{{ url_for('consultar_agendamento') }}">Voltar para consultar agendamento</a>
 </div></section>
