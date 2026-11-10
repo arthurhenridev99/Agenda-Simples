@@ -995,3 +995,19 @@ body {background:#FAF7F4}
 /* Página inicial: aproxima suavemente o título da fotografia. */
 .page-inicio .public-hero .hero-nails-image {margin-bottom:12px}
 @media(max-width:600px) {.page-inicio .public-hero .hero-nails-image {margin-bottom:10px}}
+
+/* Logo da página inicial: tamanho compacto e responsivo, sem cortes. */
+.page-inicio .hero-nails-image {
+  display:block;
+  width:min(100%, 220px);
+  height:auto;
+  max-height:180px;
+  object-fit:contain;
+  margin:0 auto 18px;
+  border-radius:0;
+  box-shadow:none;
+}
+.page-inicio .public-hero h1 { margin-top:12px; }
+@media(max-width:760px) {
+  .page-inicio .hero-nails-image { width:min(72vw, 190px); max-height:155px; margin-bottom:14px; }
+}
