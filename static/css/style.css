@@ -1031,3 +1031,163 @@ body {background:#FAF7F4}
 @media(max-width:760px) {
   .page-consultar_disponibilidade .salon-logo {width:min(72vw,190px);margin-bottom:14px;}
 }
+
+/* ============================================================
+   AGENDA SIMPLES — IDENTIDADE ROSÉ / VINHO 2026
+   Baseada na paleta aprovada; exclusivamente apresentação.
+   ============================================================ */
+:root {
+  --purple:#7A0F2E;
+  --taupe:#B76E79;
+  --rose:#F8BBD0;
+  --gold:#E91E63;
+  --brown:#4A0D1F;
+  --purple-dark:#7A0F2E;
+  --lilac:#FCE4EC;
+  --ink:#4A0D1F;
+  --muted:#926A77;
+  --line:#F0D9E1;
+  --surface:#FFFFFF;
+  --bg:#FFF8FA;
+  --radius:18px;
+  --shadow:0 10px 30px #7A0F2E0C;
+}
+body {background:#FFF8FA;color:var(--ink)}
+h1,h2,h3,h4 {color:#4A0D1F;letter-spacing:-.035em}
+a {color:#9D1643}
+a:hover {color:#E91E63}
+:focus-visible {outline-color:#E91E63}
+.card,.stat-card,.appointment,.calendar-card,.time-card,.auth-card,.service-choice {
+  background:#fff;
+  border:1px solid #F0D9E1;
+  border-radius:20px;
+  box-shadow:0 8px 28px #7A0F2E0A;
+}
+.card:hover,.service-choice:hover {border-color:#F8BBD0}
+.btn {
+  border-radius:14px;
+  font-weight:650;
+  transition:background .18s ease,transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.btn:hover {transform:translateY(-1px);text-decoration:none}
+.btn-primary,.btn-primary:hover,.btn-primary:focus {
+  color:#fff;
+  border-color:#E91E63;
+  background:linear-gradient(110deg,#E91E63,#D91659);
+  box-shadow:0 8px 18px #E91E6328;
+}
+.btn-primary:hover {background:linear-gradient(110deg,#D91659,#B50E46);box-shadow:0 10px 22px #E91E6333}
+.btn-outline-primary {color:#7A0F2E;background:#fff;border:1px solid #DDA8B8}
+.btn-outline-primary:hover {color:#7A0F2E;background:#FCE4EC;border-color:#E91E63}
+.btn-warning {background:#F8BBD0;color:#7A0F2E;border-color:#F8BBD0}
+.btn-outline-danger {color:#B21D4E;border-color:#E9B6C5}
+.form-control,.form-select,input[type="date"],input[type="time"],textarea,select {
+  border-color:#EACFD8;
+  border-radius:12px;
+}
+.form-control:focus,.form-select:focus,input:focus-visible,textarea:focus-visible,select:focus-visible {
+  border-color:#E91E63;
+  outline-color:#F8BBD0;
+}
+::selection {background:#F8BBD0;color:#4A0D1F}
+.sidebar {
+  background:linear-gradient(175deg,#7A0F2E 0%,#650A25 58%,#4A0D1F 100%);
+  border-right:0;
+  box-shadow:6px 0 30px #4A0D1F12;
+}
+.sidebar .brand,.sidebar .brand-icon {color:#fff}
+.sidebar .brand {line-height:1.3}
+.sidebar .profile {border-bottom-color:#FFFFFF2B}
+.sidebar .profile small {color:#F8BBD0}
+.sidebar .profile strong {color:#fff}
+.sidebar .avatar {background:#FCE4EC;color:#7A0F2E}
+.sidebar nav a {color:#FFEAF1}
+.sidebar nav a:hover {background:#FFFFFF1C;color:#fff}
+.sidebar nav a.active {
+  background:linear-gradient(100deg,#E91E63,#F13A79);
+  color:#fff;
+  box-shadow:0 6px 20px #E91E6330;
+}
+.sidebar-bottom .btn-outline-primary {color:#fff;background:#FFFFFF14;border-color:#FFFFFF66}
+.sidebar-bottom .btn-outline-primary:hover {background:#FFFFFF28;color:#fff}
+.sidebar-bottom small {color:#F8BBD0}
+.sidebar .logout {color:#FFDCE8}
+.sidebar .logout:hover {color:#fff}
+.topbar,.public-header {background:#fff;border-bottom:1px solid #F0D9E1}
+.topbar {box-shadow:0 2px 12px #7A0F2E06}
+.public-header .brand {color:#7A0F2E}
+.page-footer {color:#B76E79}
+.page-heading p,.text-muted,.section-heading p {color:#926A77}
+.page-heading h1,.section-heading h2 {color:#4A0D1F}
+.stats .stat-card:nth-child(4n+1),.stat-card:nth-child(4n+1) {background:linear-gradient(135deg,#fff,#FFF1F6)}
+.stats .stat-card:nth-child(4n+2),.stat-card:nth-child(4n+2) {background:linear-gradient(135deg,#fff,#FCE4EC)}
+.stats .stat-card:nth-child(4n+3),.stat-card:nth-child(4n+3) {background:linear-gradient(135deg,#fff,#FFF8FA)}
+.stats .stat-card:nth-child(4n),.stat-card:nth-child(4n) {background:linear-gradient(135deg,#fff,#F9EBF0)}
+.stat-icon,.avatar,.welcome-spark {color:#E91E63}
+.purple,.rose {background:#FCE4EC;color:#B10D46}
+.green {background:#EAF6EF;color:#2B8A61}
+.amber {background:#FFF2DD;color:#A86C19}
+.welcome-card {
+  background:linear-gradient(125deg,#FCE4EC 0%,#FFF8FA 68%,#F8BBD055 100%);
+  border:1px solid #F5D7E2;
+  border-radius:24px;
+}
+.welcome-spark,.hero-spark,.step-number {color:#E91E63}
+.public-hero {
+  background:radial-gradient(circle at 85% 15%,#F8BBD077,transparent 35%),linear-gradient(135deg,#FCE4EC 0%,#FFF8FA 65%,#FFF0F5 100%);
+  border:1px solid #F6E0E8;
+  border-radius:28px;
+  box-shadow:0 12px 38px #7A0F2E0A;
+}
+.public-hero h1 {color:#7A0F2E}
+.public-hero p {color:#855968}
+.public-hero .hero-nails-image {box-shadow:none;object-fit:contain}
+.steps .card {background:#fff;border-color:#F0D9E1}
+.steps .card:nth-child(2) {background:#FFF1F6}
+.steps .card:nth-child(3) {background:#FFF8FA}
+.steps h2 {color:#7A0F2E}
+.salon-hero {
+  background:linear-gradient(135deg,#7A0F2E 0%,#A81449 55%,#E91E63 100%);
+  color:#fff;
+}
+.salon-hero h1,.salon-hero>p {color:#fff}
+.salon-details {background:#FFFFFF16;border-color:#FFFFFF55;box-shadow:0 12px 28px #4A0D1F1B}
+.salon-social {background:#FFFFFF24;color:#fff}
+.salon-social:hover {background:#FFFFFF40}
+.booking-flow {color:#4A0D1F}
+.booking-stage {background:#fff;border:1px solid #F0D9E1;border-radius:20px;color:#4A0D1F}
+.booking-stage>span,.booking-progress>span.current {background:#E91E63;color:#fff}
+.booking-progress>span.done {background:#7A0F2E;color:#fff}
+.booking-progress:before {background:#F8BBD0}
+.booking-progress small {color:#855968}
+.booking-summary {background:#FCE4EC;border:1px solid #F8BBD0;color:#7A0F2E}
+.booking-summary p {color:#855968}
+.service-choice {border-left:4px solid #E91E63}
+.service-choice:nth-child(3n+2) {border-left-color:#B76E79;background:#FFF8FA}
+.service-choice:nth-child(3n) {border-left-color:#7A0F2E;background:#FFF1F6}
+.service-action strong {color:#D91659}
+.calendar-heading button {color:#7A0F2E}
+.calendar-day:hover:not(:disabled) {background:#FCE4EC}
+.calendar-day.selected,.time-slot.selected {background:linear-gradient(120deg,#E91E63,#C51450);color:#fff;border-color:#E91E63;box-shadow:0 5px 12px #E91E632A}
+.time-slot:hover:not(.selected) {background:#FCE4EC;border-color:#F8BBD0}
+.continue-time {border-radius:14px}
+.confirmed-code {background:#FCE4EC;border:1px solid #F8BBD0;color:#7A0F2E}
+.confirmed-check {background:#E91E63;color:#fff}
+.confirmed-icon {background:#FCE4EC;color:#E91E63}
+.table th {background:#FFF1F6;color:#7A0F2E}
+.table-hover tr:hover td {background:#FFF8FA}
+.alert-success {background:#F1F9F4;color:#276747;border-color:#CFEAD9}
+.alert-danger {background:#FFF0F3;color:#A91C47;border-color:#F7C9D6}
+.alert-warning {background:#FFF5E8;color:#865619;border-color:#F4E0BF}
+.notification-dot {background:#E91E63}
+@media(max-width:760px) {
+  .sidebar {box-shadow:none}
+  .sidebar .mobile-menu summary {color:#fff}
+  .public-hero {border-radius:22px}
+  .card,.stat-card,.appointment,.service-choice,.time-card,.calendar-card {border-radius:16px}
+  .btn {min-height:42px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .btn {transition:none}
+  .btn:hover {transform:none}
+}
