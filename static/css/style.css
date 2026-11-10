@@ -839,3 +839,6 @@ html {scroll-behavior:smooth}
 .booking-stage-link:hover {color:var(--purple);text-decoration:none}
 #lista-servicos {scroll-margin-top:24px}
 @media (prefers-reduced-motion:reduce) {html {scroll-behavior:auto}}
+
+/* Mantém o cabeçalho e os primeiros horários visíveis ao escolher uma data. */
+.page-consultar_disponibilidade .time-card {scroll-margin-top:24px;scroll-margin-bottom:24px}
