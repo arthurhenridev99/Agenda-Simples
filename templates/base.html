@@ -29,7 +29,7 @@
   <div class="sidebar-bottom"><a class="btn btn-outline-primary" href="{{ url_for('inicio') }}">Ver página pública ↗</a><form method="POST" action="{{ url_for('sair') }}"><button class="logout" type="submit">Sair da conta</button></form><small>Seu tempo, bem cuidado.</small></div>
 </aside>
 {% else %}
-<header class="public-header"><a class="brand" href="{{ url_for('inicio') }}"><span class="brand-icon" aria-hidden="true">✦</span> AgendaSimples</a><nav aria-label="Navegação pública"><a href="{{ url_for('consultar_disponibilidade') }}">Agendar</a><a href="{{ url_for('consultar_agendamento') }}">Consultar reserva</a><a class="btn btn-outline-primary" href="{{ url_for('painel') if session.get('id_profissional') else url_for('login') }}">Área profissional</a></nav></header>
+<header class="public-header"><a class="brand" href="{{ url_for('inicio') }}"><span class="brand-icon" aria-hidden="true">✦</span> AgendaSimples</a><nav aria-label="Navegação pública"><a class="btn btn-outline-primary" href="{{ url_for('painel') if session.get('id_profissional') else url_for('login') }}">Área profissional</a></nav></header>
 {% endif %}
 <div class="workspace">
 {% if admin %}<header class="topbar"><span>Minha agenda <span class="text-muted">/ Área profissional</span></span><a href="{{ url_for('listar_notificacoes') }}">Notificações ↗</a></header>{% endif %}
