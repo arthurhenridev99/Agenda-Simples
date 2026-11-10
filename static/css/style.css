@@ -987,3 +987,7 @@ body {background:#FAF7F4}
     border-radius:14px;
   }
 }
+
+/* Destaque fotográfico maior e responsivo, sem cortar a fotografia. */
+.public-hero .hero-nails-image {width:min(100%, 340px);height:auto;max-height:none;object-fit:contain;margin:0 auto 22px;border-radius:22px;box-shadow:0 12px 32px #65514C22}
+@media(max-width:600px) {.public-hero .hero-nails-image {width:min(78vw, 290px);height:auto;margin-bottom:18px;border-radius:18px}}
