@@ -842,3 +842,9 @@ html {scroll-behavior:smooth}
 
 /* Mantém o cabeçalho e os primeiros horários visíveis ao escolher uma data. */
 .page-consultar_disponibilidade .time-card {scroll-margin-top:24px;scroll-margin-bottom:24px}
+
+/* Seleção explícita do horário antes de avançar para confirmação. */
+.time-slot {font:inherit;cursor:pointer;width:100%;text-align:center}
+.time-slot.selected,.time-slot[aria-pressed="true"] {background:linear-gradient(110deg,#9876ed,#a84be7);color:#fff;border-color:#9b5be7;box-shadow:0 3px 8px #7d3fc344}
+.continue-time {margin-top:22px}
+.continue-time:disabled {opacity:.6;cursor:not-allowed}
