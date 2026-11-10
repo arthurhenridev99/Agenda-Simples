@@ -1,46 +1,30 @@
 {% extends "base.html" %}
 {% block title %}Confirmar Agendamento{% endblock %}
 {% block content %}
-<div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h1>Confirmar Agendamento</h1>
-
-                <p><strong>Serviço:</strong> {{ servico[1] }}</p>
-                <p><strong>Duração:</strong> {{ servico[2] }} minutos</p>
-                <p><strong>Valor:</strong> R$ {{ "%.2f"|format(servico[3]) }}</p>
-                <p><strong>Data:</strong> {{ data }}</p>
-                <p><strong>Horário:</strong> {{ hora }}</p>
-
-                {% if erro %}
-                <div class="alert alert-danger">{{ erro }}</div>
-                {% endif %}
-
-                <form method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <input type="hidden" name="servico" value="{{ servico[0] }}">
-                    <input type="hidden" name="data" value="{{ data }}">
-                    <input type="hidden" name="hora" value="{{ hora }}">
-
-                    <div class="mb-3">
-                        <label class="form-label" for="nome">Nome completo</label>
-                        <input class="form-control" type="text" id="nome" name="nome"
-                            value="{{ request.form.get('nome', '') }}" maxlength="100" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="telefone">Telefone com DDD</label>
-                        <input class="form-control" type="tel" id="telefone" name="telefone"
-                            value="{{ request.form.get('telefone', '') }}" placeholder="62999999999" required>
-                    </div>
-
-                    <button class="btn btn-success" type="submit">
-                        Confirmar Agendamento
-                    </button>
-
-                    <a href="/disponibilidade" class="btn btn-secondary">
-                        Voltar
-                    </a>
-                </form>
-            </div>
-        </div>
+<section class="booking-flow confirmation-flow">
+  <div class="booking-stage"><span>3</span> Confirmar Agendamento</div>
+  <div class="booking-progress" aria-label="Etapas do agendamento"><span class="done">✓<small>Serviço</small></span><span class="done">✓<small>Horário</small></span><span class="current">3<small>Confirmar</small></span></div>
+  <h1>Confirmar Agendamento</h1>
+  <p class="text-muted">Preencha seus dados para finalizar</p>
+  <div class="booking-summary booking-review">
+    <h2>Resumo do Agendamento</h2>
+    <div><span>Serviço:</span><strong>{{ servico[1] }}</strong></div>
+    <div><span>Profissional:</span><strong>Unhas da Poliana</strong></div>
+    <div><span>Duração:</span><strong>{{ servico[2] }} min</strong></div>
+    <div><span>Data:</span><strong>{{ data[8:10] }}/{{ data[5:7] }}/{{ data[0:4] }}</strong></div>
+    <div><span>Horário:</span><strong>{{ hora }}</strong></div>
+    <div class="booking-total"><span>Valor Total:</span><strong>R$ {{ "%.2f"|format(servico[3]) }}</strong></div>
+  </div>
+  {% if erro %}<div class="alert alert-danger">{{ erro }}</div>{% endif %}
+  <form method="POST" class="booking-customer-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="servico" value="{{ servico[0] }}">
+    <input type="hidden" name="data" value="{{ data }}">
+    <input type="hidden" name="hora" value="{{ hora }}">
+    <div class="mb-3"><label for="nome">Nome Completo *</label><input class="form-control" id="nome" name="nome" placeholder="Digite seu nome completo" value="{{ request.form.get('nome', '') }}" maxlength="100" required></div>
+    <div class="mb-3"><label for="telefone">Telefone/WhatsApp *</label><input class="form-control" type="tel" id="telefone" name="telefone" placeholder="(00) 0 0000-0000" value="{{ request.form.get('telefone', '') }}" inputmode="tel" required><small class="text-muted">Digite DDD + número</small></div>
+    <button class="btn btn-primary w-100" type="submit">🎉 Confirmar Agendamento</button>
+    <a class="btn btn-outline-primary w-100 mt-3" href="{{ url_for('consultar_disponibilidade', servico=servico[0], data=data) }}#escolher-data">Voltar</a>
+  </form>
+</section>
 {% endblock %}
