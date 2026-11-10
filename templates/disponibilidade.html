@@ -18,7 +18,7 @@
   </div>
 </section>
 <section class="booking-flow">
-  <div class="booking-stage"><span>1</span> Selecionar Serviço</div>
+  <a class="booking-stage booking-stage-link" href="#lista-servicos"><span>1</span> Selecionar Serviço</a>
   <div class="booking-progress" aria-label="Etapas do agendamento">
     <span class="{{ 'done' if servico_selecionado else 'current' }}">1<small>Serviço</small></span>
     <span class="{{ 'done' if consulta_realizada else ('current' if servico_selecionado else '') }}">2<small>Horário</small></span>
@@ -27,7 +27,7 @@
   <h2>Escolha o Serviço</h2>
   <p class="text-muted">Selecione o atendimento desejado.</p>
   {% if erro %}<div class="alert alert-danger">{{ erro }}</div>{% endif %}
-  <div class="service-list">
+  <div class="service-list" id="lista-servicos">
   {% for servico in servicos %}
     <article class="card service-choice">
       <div><h3>{{ servico[1] }}</h3><p class="text-muted">◷ {{ servico[3] }} min</p></div>
