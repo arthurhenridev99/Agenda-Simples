@@ -1,101 +1,102 @@
 {% extends "base.html" %}
 {% block title %}Consultar Disponibilidade{% endblock %}
 {% block content %}
-<h1>Horários Disponíveis</h1>
-
-        <p class="text-muted mb-4">
-            Escolha o serviço e a data para consultar os horários.
-        </p>
-
-        <div class="card shadow-sm mb-4">
-            <div class="card-body p-4">
-
-                <form method="GET">
-
-                    <div class="mb-3">
-                        <label for="servico" class="form-label">
-                            Serviço
-                        </label>
-
-                        <select id="servico" name="servico" class="form-select" required>
-                            <option value="">
-                                Selecione um serviço
-                            </option>
-
-                            {% for servico in servicos %}
-                            <option value="{{ servico[0] }}" {% if servico_selecionado==servico[0]|string %} selected {%
-                                endif %}>
-                                {{ servico[1] }} -
-                                {{ servico[3] }} min -
-                                R$ {{ "%.2f"|format(servico[2]) }}
-                            </option>
-                            {% endfor %}
-
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="data" class="form-label">
-                            Data do atendimento
-                        </label>
-
-                        <input type="date" id="data" name="data" class="form-control" min="{{ data_minima }}"
-                            value="{{ data_selecionada }}" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">
-                        Consultar Horários
-                    </button>
-                </form>
-
-            </div>
-        </div>
-
-        {% if erro %}
-        <div class="alert alert-danger">
-            {{ erro }}
-        </div>
-        {% endif %}
-
-        {% if consulta_realizada %}
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-
-                <h4 class="mb-3">
-                    Horários disponíveis
-                </h4>
-
-                {% if horarios %}
-                <div class="d-flex flex-wrap gap-2">
-
-                    {% for horario in horarios %}
-
-                    <a href="{{ url_for('agendar', servico=servico_selecionado, data=data_selecionada, hora=horario) }}"
-                        class="btn btn-success">
-                        {{ horario }}
-                    </a>
-
-                    {% endfor %}
-
-                </div>
-
-                <p class="text-muted mt-3 mb-0">
-                    Os horários consideram a duração do serviço,
-                    os bloqueios e os atendimentos já agendados.
-                </p>
-
-                {% else %}
-                <div class="alert alert-warning mb-0">
-                    Nenhum horário disponível para esta data.
-                    Escolha outro dia.
-                </div>
-                {% endif %}
-
-            </div>
-        </div>
-        {% endif %}
-
-        <a href="/" class="btn btn-secondary mt-3">
-            Voltar ao início
-        </a>
+<section class="salon-hero">
+  <div class="salon-logo" aria-hidden="true">✦</div>
+  <h1>UNHAS DA POLIANA</h1>
+  <p>Salão específico de manicures</p>
+  <div class="salon-details">
+    <p>⌖ &nbsp; Bom Jesus de Goiás</p>
+    <p>◷ &nbsp; Seg - Sex: 09:00 às 18:00</p>
+    <p>♧ &nbsp; 000000000</p>
+    <div class="salon-socials">
+      {% for rede in ['Instagram', 'Facebook', 'WhatsApp', 'Site'] %}
+      <button type="button" class="salon-social" onclick="document.getElementById('mvp-aviso').hidden=false">{{ rede }}</button>
+      {% endfor %}
+    </div>
+    <p id="mvp-aviso" class="mvp-notice" role="status" hidden>Esta funcionalidade faz parte do MVP e será implantada futuramente.</p>
+  </div>
+</section>
+<section class="booking-flow">
+  <div class="booking-stage"><span>1</span> Selecionar Serviço</div>
+  <div class="booking-progress" aria-label="Etapas do agendamento">
+    <span class="{{ 'done' if servico_selecionado else 'current' }}">1<small>Serviço</small></span>
+    <span class="{{ 'done' if consulta_realizada else ('current' if servico_selecionado else '') }}">2<small>Horário</small></span>
+    <span>3<small>Confirmar</small></span>
+  </div>
+  <h2>Escolha o Serviço</h2>
+  <p class="text-muted">Selecione o atendimento desejado.</p>
+  {% if erro %}<div class="alert alert-danger">{{ erro }}</div>{% endif %}
+  <div class="service-list">
+  {% for servico in servicos %}
+    <article class="card service-choice">
+      <div><h3>{{ servico[1] }}</h3><p class="text-muted">◷ {{ servico[3] }} min</p></div>
+      <div class="service-action"><strong>R$ {{ "%.2f"|format(servico[2]) }}</strong><a class="btn btn-primary" href="{{ url_for('consultar_disponibilidade', servico=servico[0]) }}#escolher-data">Agendar ›</a></div>
+    </article>
+  {% else %}
+    <div class="card card-body">Nenhum serviço disponível no momento.</div>
+  {% endfor %}
+  </div>
+  {% if servico_selecionado %}
+  <section id="escolher-data" class="booking-date-section">
+    <div class="booking-stage"><span>2</span> Escolher Horário</div>
+    <h2>Escolha o Horário</h2>
+    {% for servico in servicos if servico[0]|string == servico_selecionado %}
+      <div class="booking-summary"><strong>Serviço: {{ servico[1] }}</strong><p>Profissional: Unhas da Poliana</p><p>Duração: {{ servico[3] }} min · R$ {{ "%.2f"|format(servico[2]) }}</p></div>
+    {% endfor %}
+    <form method="GET" id="date-form">
+      <input type="hidden" name="servico" value="{{ servico_selecionado }}">
+      <input type="hidden" name="data" id="data" value="{{ data_selecionada }}" required>
+      <div class="card calendar-card">
+        <div class="calendar-heading"><button type="button" id="prev-month" aria-label="Mês anterior">‹</button><h3 id="calendar-month"></h3><button type="button" id="next-month" aria-label="Próximo mês">›</button></div>
+        <div class="calendar-grid" id="calendar-grid" aria-label="Selecione uma data"></div>
+      </div>
+    </form>
+    {% if consulta_realizada %}
+    <div class="card time-card">
+      <h3>◷ &nbsp; Horários Disponíveis</h3>
+      <p class="text-muted" id="selected-date">{{ data_selecionada }}</p>
+      {% if horarios %}
+      <div class="time-grid">
+        {% for horario in horarios %}
+          <a href="{{ url_for('agendar', servico=servico_selecionado, data=data_selecionada, hora=horario) }}" class="time-slot">{{ horario }}</a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="alert alert-warning">Nenhum horário disponível para esta data. Escolha outro dia.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+  {% endif %}
+</section>
+<script>
+(function () {
+  const form=document.getElementById('date-form'); if(!form)return;
+  const field=document.getElementById('data'), grid=document.getElementById('calendar-grid');
+  const title=document.getElementById('calendar-month'), min="{{ data_minima }}";
+  let shown=new Date((field.value||min).slice(0,7)+"-01T12:00:00");
+  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const pad=n=>String(n).padStart(2,'0');
+  function render(){
+    const y=shown.getFullYear(),m=shown.getMonth();
+    title.textContent=months[m]+' '+y; grid.replaceChildren();
+    ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(d=>{const e=document.createElement('span');e.className='calendar-weekday';e.textContent=d;grid.append(e)});
+    for(let i=0;i<new Date(y,m,1).getDay();i++)grid.append(document.createElement('span'));
+    for(let d=1;d<=new Date(y,m+1,0).getDate();d++){
+      const iso=y+'-'+pad(m+1)+'-'+pad(d),button=document.createElement('button');
+      button.type='button';button.textContent=d;button.className='calendar-day'+(iso===field.value?' selected':'');
+      button.disabled=iso<min;button.setAttribute('aria-label',iso);
+      if(iso===field.value)button.setAttribute('aria-pressed','true');
+      button.addEventListener('click',()=>{field.value=iso;form.submit()});grid.append(button);
+    }
+    document.getElementById('prev-month').disabled=y+'-'+pad(m+1)<min.slice(0,7)||y+'-'+pad(m+1)===min.slice(0,7);
+  }
+  document.getElementById('prev-month').addEventListener('click',()=>{shown.setMonth(shown.getMonth()-1);render()});
+  document.getElementById('next-month').addEventListener('click',()=>{shown.setMonth(shown.getMonth()+1);render()});
+  render();
+  const selected=document.getElementById('selected-date');
+  if(selected&&field.value){const [y,m,d]=field.value.split('-');selected.textContent=d+'/'+m+'/'+y}
+})();
+</script>
 {% endblock %}
