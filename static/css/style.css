@@ -832,3 +832,10 @@ h1 {
 .confirmed-actions {display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .confirmed-actions .new-booking {grid-column:1/-1}
 @media(max-width:600px) {.salon-hero h1{font-size:27px}.service-choice{padding:16px}.service-action strong{font-size:15px}.calendar-card,.time-card{padding:15px}.calendar-grid{gap:2px}.calendar-day{min-height:36px}.confirmed-details{padding:18px}}
+
+/* Rolagem suave no atalho de seleção de serviço. */
+html {scroll-behavior:smooth}
+.booking-stage-link {color:var(--ink);text-decoration:none;cursor:pointer}
+.booking-stage-link:hover {color:var(--purple);text-decoration:none}
+#lista-servicos {scroll-margin-top:24px}
+@media (prefers-reduced-motion:reduce) {html {scroll-behavior:auto}}
