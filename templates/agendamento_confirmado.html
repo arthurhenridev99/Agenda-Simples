@@ -8,6 +8,7 @@
   <div class="card confirmed-details">
     <div><span class="confirmed-icon">▦</span><p><strong>Serviço</strong><span>{{ agendamento[0] }}</span></p></div>
     <div><span class="confirmed-icon">♙</span><p><strong>Profissional</strong><span>Unhas da Poliana</span></p></div>
+    <div><span class="confirmed-icon">◷</span><p><strong>Duração</strong><span>{{ agendamento[4] }} min</span></p></div>
     <div><span class="confirmed-icon">◷</span><p><strong>Data e Horário</strong><span>{{ agendamento[1][8:10] }}/{{ agendamento[1][5:7] }}/{{ agendamento[1][0:4] }} · {{ agendamento[2] }}</span></p></div>
     <div><span class="confirmed-icon">▣</span><p><strong>Valor</strong><span class="confirmed-price">R$ {{ "%.2f"|format(agendamento[5]) }}</span></p></div>
     <hr>
@@ -24,7 +25,7 @@
 </section>
 <script>
 (function(){
-  const text="UNHAS DA POLIANA\nAgendamento confirmado\nServiço: {{ agendamento[0]|e }}\nData: {{ agendamento[1]|e }}\nHorário: {{ agendamento[2]|e }}\nCódigo: {{ agendamento[3]|e }}";
+  const text=["UNHAS DA POLIANA","Agendamento confirmado","Serviço: "+{{ agendamento[0]|tojson }},"Data: "+{{ agendamento[1]|tojson }},"Horário: "+{{ agendamento[2]|tojson }},"Código: "+{{ agendamento[3]|tojson }}].join("\\n");
   const feedback=document.getElementById('copy-feedback');
   document.getElementById('copy-booking').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(text);feedback.textContent='Dados copiados!'}catch(e){feedback.textContent='Não foi possível copiar automaticamente.'}});
   document.getElementById('share-booking').addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:'Agendamento confirmado',text})}catch(e){}}else{try{await navigator.clipboard.writeText(text);feedback.textContent='Dados copiados para compartilhar.'}catch(e){feedback.textContent='Compartilhamento indisponível neste navegador.'}}});
