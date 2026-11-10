@@ -967,3 +967,23 @@ body {background:#FAF7F4}
 .form-control,.form-select {background:#fff;border-color:#E1D4CD}
 .form-control:focus,.form-select:focus {border-color:#A18A83;outline:3px solid #E8D5CE}
 @media(max-width:600px) {.stat-card {padding:17px}.service-choice {border-left-width:3px}}
+
+/* Foto de destaque da página inicial: imagem inteira, sem recorte. */
+.public-hero .hero-nails-image {
+  display:block;
+  width:clamp(94px,12vw,142px);
+  height:auto;
+  max-width:100%;
+  object-fit:contain;
+  margin:0 auto 18px;
+  border-radius:18px;
+  box-shadow:0 9px 24px #65514C20;
+}
+@media(max-width:600px) {
+  .public-hero .hero-nails-image {
+    width:clamp(88px,29vw,120px);
+    height:auto;
+    margin-bottom:16px;
+    border-radius:14px;
+  }
+}
