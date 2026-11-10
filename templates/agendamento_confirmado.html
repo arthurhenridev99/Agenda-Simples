@@ -1,30 +1,33 @@
 {% extends "base.html" %}
 {% block title %}Agendamento Confirmado{% endblock %}
 {% block content %}
-<div class="card shadow-sm">
-            <div class="card-body p-4 text-center">
-                <h1 class="text-success">
-                    Agendamento Confirmado!
-                </h1>
-
-                <p>Seu atendimento foi registrado com sucesso.</p>
-
-                <p><strong>Serviço:</strong> {{ agendamento[0] }}</p>
-                <p><strong>Data:</strong> {{ agendamento[1] }}</p>
-                <p><strong>Horário:</strong> {{ agendamento[2] }}</p>
-
-                <div class="alert alert-info">
-                    <p class="mb-1">Código de atendimento</p>
-                    <h3 class="mb-0">{{ agendamento[3] }}</h3>
-                </div>
-
-                <p class="text-muted">
-                    Guarde este código para consultar seu agendamento.
-                </p>
-
-                <a href="/" class="btn btn-primary">
-                    Voltar ao início
-                </a>
-            </div>
-        </div>
+<section class="booking-confirmed">
+  <div class="confirmed-check" aria-hidden="true">✓</div>
+  <h1>Agendamento Confirmado!</h1>
+  <p class="text-muted">Seu agendamento foi realizado com sucesso</p>
+  <div class="card confirmed-details">
+    <div><span class="confirmed-icon">▦</span><p><strong>Serviço</strong><span>{{ agendamento[0] }}</span></p></div>
+    <div><span class="confirmed-icon">♙</span><p><strong>Profissional</strong><span>Unhas da Poliana</span></p></div>
+    <div><span class="confirmed-icon">◷</span><p><strong>Data e Horário</strong><span>{{ agendamento[1][8:10] }}/{{ agendamento[1][5:7] }}/{{ agendamento[1][0:4] }} · {{ agendamento[2] }}</span></p></div>
+    <div><span class="confirmed-icon">▣</span><p><strong>Valor</strong><span class="confirmed-price">R$ {{ "%.2f"|format(agendamento[5]) }}</span></p></div>
+    <hr>
+    <div><span class="confirmed-icon">♧</span><p><strong>Dados da Cliente</strong><span>{{ agendamento[6] }}</span><span>{{ agendamento[7] }}</span></p></div>
+    <hr>
+    <div class="confirmed-code"><p><strong>Código de atendimento</strong><span id="booking-code">{{ agendamento[3] }}</span><small>Guarde este código para consultar, cancelar ou reagendar.</small></p></div>
+  </div>
+  <div class="confirmed-actions">
+    <button type="button" class="btn btn-primary" id="share-booking">Compartilhar</button>
+    <button type="button" class="btn btn-outline-primary" id="copy-booking">Copiar</button>
+    <a href="{{ url_for('consultar_disponibilidade') }}" class="btn btn-outline-primary new-booking">← Fazer Novo Agendamento</a>
+  </div>
+  <p id="copy-feedback" class="text-muted" role="status"></p>
+</section>
+<script>
+(function(){
+  const text="UNHAS DA POLIANA\nAgendamento confirmado\nServiço: {{ agendamento[0]|e }}\nData: {{ agendamento[1]|e }}\nHorário: {{ agendamento[2]|e }}\nCódigo: {{ agendamento[3]|e }}";
+  const feedback=document.getElementById('copy-feedback');
+  document.getElementById('copy-booking').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(text);feedback.textContent='Dados copiados!'}catch(e){feedback.textContent='Não foi possível copiar automaticamente.'}});
+  document.getElementById('share-booking').addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:'Agendamento confirmado',text})}catch(e){}}else{try{await navigator.clipboard.writeText(text);feedback.textContent='Dados copiados para compartilhar.'}catch(e){feedback.textContent='Compartilhamento indisponível neste navegador.'}}});
+})();
+</script>
 {% endblock %}
