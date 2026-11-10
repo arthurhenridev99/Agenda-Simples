@@ -28,7 +28,7 @@
   const text=["UNHAS DA POLIANA","Agendamento confirmado","Serviço: "+{{ agendamento[0]|tojson }},"Data: "+{{ agendamento[1]|tojson }},"Horário: "+{{ agendamento[2]|tojson }},"Código: "+{{ agendamento[3]|tojson }}].join("\\n");
   const feedback=document.getElementById('copy-feedback');
   document.getElementById('copy-booking').addEventListener('click',async()=>{try{await navigator.clipboard.writeText({{ agendamento[3]|tojson }});feedback.textContent='Código de atendimento copiado!'}catch(e){feedback.textContent='Não foi possível copiar automaticamente.'}});
-  document.getElementById('share-booking').addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:'Agendamento confirmado',text})}catch(e){}}else{try{await navigator.clipboard.writeText(text);feedback.textContent='Dados copiados para compartilhar.'}catch(e){feedback.textContent='Compartilhamento indisponível neste navegador.'}}});
+  document.getElementById('share-booking').addEventListener('click',()=>{feedback.textContent='Esta funcionalidade faz parte do MVP e será implantada futuramente.'});
 })();
 </script>
 {% endblock %}
