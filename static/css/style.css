@@ -1,13 +1,13 @@
 /* Identidade compartilhada por todas as páginas, sem dependências externas. */
 :root {
-  --purple:#7736d4;
-  --purple-dark:#5825a5;
-  --lilac:#f0e8fc;
-  --ink:#30263e;
-  --muted:#71677f;
-  --line:#e9e3ef;
+  --purple:#A18A83;\n  --taupe:#A18A83;\n  --rose:#E8D5CE;\n  --gold:#C5A36B;\n  --brown:#65514C;
+  --purple-dark:#65514C;
+  --lilac:#E8D5CE;
+  --ink:#3F302C;
+  --muted:#75615B;
+  --line:#E6DAD4;
   --surface:#fff;
-  --bg:#f8f6fc;
+  --bg:#F7F1ED;
   --radius:16px;
   --shadow:0 4px 20px #38205606}
 
@@ -49,7 +49,7 @@ hr {
   border-top:1px solid var(--line);
   margin:24px 0}
 :focus-visible {
-  outline:3px solid #a878e3;
+  outline:3px solid #C5A36B;
   outline-offset:4px}
 .skip-link {
   position:absolute;
@@ -117,7 +117,7 @@ hr {
   gap:13px;
   align-items:center;
   padding:11px 13px;
-  color:#655b71;
+  color:#65514C;
   border-radius:10px;
   font-weight:550}
 .sidebar nav a>span {
@@ -129,8 +129,8 @@ hr {
   text-decoration:none}
 .sidebar nav a.active {
   color:white;
-  background:linear-gradient(100deg,#813de1,#9429ce);
-  box-shadow:0 4px 10px #7736d425}
+  background:linear-gradient(100deg,#A18A83,#8E746D);
+  box-shadow:0 4px 10px #A18A8330}
 .mobile-menu summary {
   display:none}
 .sidebar-bottom {
@@ -147,7 +147,7 @@ hr {
 .logout {
   border:0;
   background:none;
-  color:#a34265;
+  color:#9A4E59;
   padding:15px 12px}
 .admin-layout .workspace {
   margin-left:244px}
@@ -221,19 +221,19 @@ hr {
   transition:background .15s,box-shadow .15s}
 .btn:hover {
   text-decoration:none;
-  box-shadow:0 3px 12px #54228418}
+  box-shadow:0 3px 12px #65514C18}
 .btn-primary {
-  background:linear-gradient(105deg,#7938dc,#a647d0);
+  background:linear-gradient(105deg,#A18A83,#8C7069);
   color:white}
 .btn-primary:hover {
   background:var(--purple-dark)}
 .btn-outline-primary {
   background:white;
   color:var(--purple-dark);
-  border-color:#d8c7ec}
+  border-color:#D8C4BC}
 .btn-secondary,.btn-outline-secondary {
-  background:#f2eef6;
-  color:#62566e;
+  background:#F3E8E3;
+  color:#65514C;
   border-color:var(--line)}
 .btn-success,.btn-outline-success {
   background:#e7f6ef;
@@ -261,21 +261,21 @@ hr {
   min-height:46px;
   padding:10px 13px;
   color:var(--ink);
-  background:#fcfaff;
-  border:1px solid #dbd3e4;
+  background:#FFFCFA;
+  border:1px solid #DAC9C1;
   border-radius:8px}
 .form-control:focus,.form-select:focus {
   border-color:var(--purple);
-  outline:3px solid #ede2fa}
+  outline:3px solid #E8D5CE}
 .form-control::placeholder {
-  color:#817789}
+  color:#82716B}
 .alert {
   padding:14px 17px;
-  border:1px solid #e2d4f2;
+  border:1px solid #E1CEC6;
   border-radius:10px;
   margin-bottom:20px;
-  background:#f4edfd;
-  color:#644192}
+  background:#F3E7E1;
+  color:#65514C}
 .alert-danger {
   background:#fff0f4;
   color:#992e4a;
@@ -299,8 +299,8 @@ hr {
   font-size:13px;
   text-align:left}
 .table th {
-  background:#f8f5fc;
-  color:#71627d;
+  background:#F3EAE6;
+  color:#75615B;
   font-size:11px;
   font-weight:650;
   padding:13px 16px;
@@ -312,7 +312,7 @@ hr {
 .table td .d-flex {
   flex-wrap:wrap}
 .table-hover tr:hover td {
-  background:#fcfaff}
+  background:#FFFCFA}
 .badge,.status {
   display:inline-block;
   padding:4px 10px;
@@ -321,14 +321,14 @@ hr {
   font-size:11px;
   font-weight:600}
 .bg-primary,.status-agendado {
-  background:#eee5fb;
-  color:#743db0}
+  background:#E8D5CE;
+  color:#65514C}
 .bg-success,.status-concluido {
   background:#e4f5ec;
   color:#247354}
 .bg-secondary,.status-cancelado {
-  background:#f8eaf0;
-  color:#9b4662}
+  background:#F3E3DE;
+  color:#9A4E59}
 .bg-warning,.status-falta {
   background:#fff1d8;
   color:#845911}
@@ -336,9 +336,9 @@ hr {
   padding:24px;
   margin-bottom:24px}
 .update-row {
-  border-left:3px solid #b682e7;
+  border-left:3px solid #C5A36B;
   border-radius:8px;
-  background:#fbf9fe;
+  background:#FCF8F5;
   padding:11px 16px;
   margin-top:9px;
   display:flex;
@@ -351,7 +351,7 @@ hr {
   width:7px;
   height:7px;
   border-radius:50%;
-  background:#aa77da;
+  background:#C5A36B;
   flex-shrink:0}
 .quiet-state {
   margin:0;
@@ -412,8 +412,8 @@ hr {
   font-size:20px;
   margin-bottom:10px}
 .purple {
-  background:#f0e7fc;
-  color:#9a64d1}
+  background:#E8D5CE;
+  color:#8E746D}
 .green {
   background:#e4f8ee;
   color:#33866c}
@@ -431,7 +431,7 @@ hr {
   border:1px solid var(--line);
   border-radius:11px;
   margin-top:10px;
-  background:#fdfbff}
+  background:#FFFCFA}
 .appointment-client {
   flex:1;
   min-width:0}
@@ -450,7 +450,7 @@ hr {
   color:var(--muted)}
 .empty-state>span {
   font-size:32px;
-  color:#ac85d4}
+  color:#C5A36B}
 .empty-state h3 {
   color:var(--ink);
   margin:12px 0 6px}
@@ -458,13 +458,13 @@ hr {
   display:flex;
   gap:24px;
   padding:28px;
-  border:1px solid #dfcef6;
-  background:linear-gradient(120deg,#f0e6fe,#fff);
+  border:1px solid #E1CEC6;
+  background:linear-gradient(120deg,#E8D5CE,#fff);
   border-radius:16px;
   margin-bottom:24px}
 .welcome-spark {
   font-size:54px;
-  color:#a36dd6}
+  color:#C5A36B}
 .welcome-card p {
   color:var(--muted)}
 .public-header {
@@ -489,7 +489,7 @@ hr {
   padding:36px 0 50px}
 .hero-spark {
   font-size:64px;
-  color:#b68ae4}
+  color:#C5A36B}
 .public-hero h1 {
   font-size:48px;
   letter-spacing:-1.8px;
@@ -515,7 +515,7 @@ hr {
   font-size:13px;
   margin:0}
 .step-number {
-  color:#ac80d6;
+  color:#C5A36B;
   font-size:20px}
 .page-login .page-content,.page-cadastro .page-content {
   max-width:520px;
@@ -525,7 +525,7 @@ hr {
 .page-login h1,.page-cadastro h1 {
   font-size:24px}
 .page-login .card,.page-cadastro .card {
-  box-shadow:0 14px 32px #4a2c6c12}
+  box-shadow:0 14px 32px #65514C12}
 .page-login .card-body,.page-cadastro .card-body {
   padding:32px}
 .page-consultar_agendamento .card>form,.page-consultar_agendamento .card>p {
@@ -763,10 +763,10 @@ h1 {
 
 /* Jornada pública de agendamento: mantém a paleta e componentes atuais. */
 .page-consultar_disponibilidade .page-content {max-width:100%;padding:0 0 42px}
-.salon-hero {background:linear-gradient(120deg,#8869c6,#7637c8);color:white;text-align:center;padding:38px 16px 44px}
+.salon-hero {background:linear-gradient(120deg,#B59C92,#92766E);color:white;text-align:center;padding:38px 16px 44px}
 .salon-logo {width:90px;height:90px;margin:0 auto 20px;background:#fff;color:var(--purple);border-radius:18px;display:grid;place-items:center;font-size:46px}
 .salon-hero h1 {font-size:32px;margin-bottom:8px}
-.salon-hero>p {color:#f4e9ff;font-size:17px}
+.salon-hero>p {color:#FFF7F2;font-size:17px}
 .salon-details {max-width:410px;margin:24px auto 0;border:1px solid #ffffff44;border-radius:18px;padding:24px;background:#ffffff12}
 .salon-details>p {margin:0 0 14px}
 .salon-socials {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;border-top:1px solid #ffffff44;padding-top:18px}
@@ -776,11 +776,11 @@ h1 {
 .booking-flow {max-width:610px;margin:30px auto;text-align:center;padding:0 16px}
 .booking-flow>h1,.booking-flow>h2,.booking-date-section>h2 {margin:24px 0 10px}
 .booking-stage {display:inline-flex;align-items:center;gap:14px;padding:14px 22px;background:white;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);font-size:17px;font-weight:650}
-.booking-stage>span {display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(120deg,#8b50df,#b66bf1);color:white}
+.booking-stage>span {display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(120deg,#A18A83,#8C7069);color:white}
 .booking-progress {display:flex;justify-content:space-around;position:relative;margin:30px auto 46px;max-width:430px}
-.booking-progress:before {content:'';height:3px;background:#e5ddef;position:absolute;left:14%;right:14%;top:16px}
-.booking-progress>span {position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#ece9f2;color:#777;font-weight:700}
-.booking-progress>span.current {background:#9c54e4;color:white}
+.booking-progress:before {content:'';height:3px;background:#E8D5CE;position:absolute;left:14%;right:14%;top:16px}
+.booking-progress>span {position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#EDE3DE;color:#777;font-weight:700}
+.booking-progress>span.current {background:#A18A83;color:white}
 .booking-progress>span.done {background:#20b884;color:white}
 .booking-progress small {position:absolute;top:40px;color:var(--muted);font-weight:500}
 .service-list {display:grid;gap:14px;margin-top:28px;text-align:left}
@@ -791,7 +791,7 @@ h1 {
 .service-action strong {color:var(--purple);font-size:18px}
 .booking-date-section {margin-top:46px;scroll-margin-top:24px}
 .booking-date-section .booking-stage {margin-bottom:20px}
-.booking-summary {background:#f5f1ff;border:1px solid #e4d9f4;border-radius:14px;padding:20px;margin:20px auto 30px;color:#7353a1}
+.booking-summary {background:#F3E7E1;border:1px solid #E5D1C9;border-radius:14px;padding:20px;margin:20px auto 30px;color:#65514C}
 .booking-summary p {margin:5px 0}
 .calendar-card,.time-card {max-width:450px;margin:22px auto;padding:24px}
 .calendar-heading {display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
@@ -801,23 +801,23 @@ h1 {
 .calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .calendar-weekday {font-size:11px;color:var(--muted);padding:10px 0}
 .calendar-day {border:0;border-radius:9px;background:transparent;min-height:40px;color:var(--ink)}
-.calendar-day:hover:not(:disabled) {background:#f0e6ff}
+.calendar-day:hover:not(:disabled) {background:#F1E3DC}
 .calendar-day.selected {background:var(--purple);color:white}
-.calendar-day:disabled {color:#cfcbd4;cursor:not-allowed}
+.calendar-day:disabled {color:#B9A9A1;cursor:not-allowed}
 .time-card {text-align:left}
 .time-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .time-slot {display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fbfaff;color:var(--ink);font-weight:600}
 .time-slot:hover {background:var(--purple);color:white;text-decoration:none}
 .confirmation-flow .booking-review {text-align:left;margin:28px 0}
 .booking-review h2 {color:var(--purple);margin-bottom:16px}
-.booking-review>div {display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #ded5ea}
+.booking-review>div {display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #E2D4CD}
 .booking-review>div:last-child {border:0}
 .booking-review>div strong {text-align:right;color:var(--ink)}
 .booking-review .booking-total strong {color:var(--purple);font-size:20px}
 .booking-customer-form {text-align:left}
 .booking-customer-form small {display:block;margin-top:6px}
 .booking-confirmed {max-width:610px;margin:0 auto;text-align:center;padding:32px 16px}
-.page-agendamento_confirmado .page-content {background:#f0fff6;max-width:none}
+.page-agendamento_confirmado .page-content {background:#F7F1ED;max-width:none}
 .confirmed-check {display:grid;place-items:center;margin:0 auto 20px;width:90px;height:90px;border-radius:50%;background:#24b883;color:white;font-size:48px}
 .confirmed-details {padding:28px;text-align:left;margin:28px 0}
 .confirmed-details>div:not(.confirmed-code) {display:flex;gap:16px;align-items:flex-start;margin-bottom:18px}
@@ -825,8 +825,8 @@ h1 {
 .confirmed-details p strong,.confirmed-details p span {display:block}
 .confirmed-details p span {color:var(--muted)}
 .confirmed-details .confirmed-price {color:#169769;font-size:19px;font-weight:750}
-.confirmed-icon {display:grid;place-items:center;flex:0 0 42px;height:42px;background:#f4edfd;color:var(--purple);border-radius:12px;font-size:22px}
-.confirmed-code {background:#f5f1ff;border-radius:12px;padding:16px;text-align:center}
+.confirmed-icon {display:grid;place-items:center;flex:0 0 42px;height:42px;background:#F3E7E1;color:var(--purple);border-radius:12px;font-size:22px}
+.confirmed-code {background:#F3E7E1;border-radius:12px;padding:16px;text-align:center}
 .confirmed-code span {font-size:22px;font-weight:750;letter-spacing:1px;overflow-wrap:anywhere}
 .confirmed-code small {display:block;color:var(--muted)}
 .confirmed-actions {display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -845,6 +845,45 @@ html {scroll-behavior:smooth}
 
 /* Seleção explícita do horário antes de avançar para confirmação. */
 .time-slot {font:inherit;cursor:pointer;width:100%;text-align:center}
-.time-slot.selected,.time-slot[aria-pressed="true"] {background:linear-gradient(110deg,#9876ed,#a84be7);color:#fff;border-color:#9b5be7;box-shadow:0 3px 8px #7d3fc344}
+.time-slot.selected,.time-slot[aria-pressed="true"] {background:linear-gradient(110deg,#B29A90,#92766E);color:#fff;border-color:#92766E;box-shadow:0 3px 8px #65514C33}
 .continue-time {margin-top:22px}
 .continue-time:disabled {opacity:.6;cursor:not-allowed}
+
+/* Identidade Unhas da Poliana — acabamento acolhedor e consistente. */
+body {background:#F7F1ED;color:#3F302C}
+h1,h2,h3,h4 {color:#65514C}
+.card,.stat-card,.salon-details,.booking-stage,.calendar-card,.time-card {border-color:#E8D5CE}
+.card,.stat-card {box-shadow:0 8px 28px #65514C0B}
+.btn-primary {background:#A18A83;border-color:#A18A83;color:#fff}
+.btn-primary:hover,.btn-primary:focus-visible {background:#65514C;border-color:#65514C;color:#fff}
+.btn-outline-primary {background:#fff;border-color:#A18A83;color:#65514C}
+.btn-outline-primary:hover {background:#F3E7E1;color:#65514C}
+.sidebar nav a.active {background:#A18A83;box-shadow:0 4px 12px #65514C24}
+.sidebar nav a:hover {background:#F3E7E1}
+.form-control,.form-select {background:#fff;border-color:#DCCBC3}
+.form-control:focus,.form-select:focus {border-color:#A18A83;outline:3px solid #E8D5CE}
+.public-hero {background:radial-gradient(ellipse at top,#E8D5CE88,transparent 65%);border-radius:26px}
+.hero-spark,.step-number,.welcome-spark {color:#C5A36B}
+.salon-hero {background:linear-gradient(135deg,#B49C92 0%,#A18A83 50%,#81665F 100%);color:#fff}
+.salon-hero h1 {color:#fff}
+.salon-hero>p {color:#FFF7F2}
+.salon-logo {color:#C5A36B;background:#fff}
+.salon-details {border-color:#FFFFFF66;background:#FFFFFF16;box-shadow:0 12px 30px #65514C12}
+.salon-social {background:#FFFFFF24}
+.salon-social:hover {background:#FFFFFF36}
+.booking-stage>span,.booking-progress>span.current {background:#A18A83;color:#fff}
+.booking-progress>span.done {background:#7B8D74;color:#fff}
+.booking-summary,.confirmed-code {background:#F3E7E1;border-color:#E8D5CE;color:#65514C}
+.service-action strong,.booking-review h2,.booking-review .booking-total strong {color:#65514C}
+.calendar-day:hover:not(:disabled) {background:#E8D5CE}
+.calendar-day.selected {background:#A18A83;color:#fff}
+.time-slot {background:#fff;border-color:#E8D5CE;color:#65514C}
+.time-slot:hover,.time-slot.selected,.time-slot[aria-pressed="true"] {background:#A18A83;border-color:#A18A83;color:#fff;box-shadow:0 3px 10px #65514C24}
+.page-agendamento_confirmado .page-content {background:#F7F1ED}
+.confirmed-check {background:#7B8D74}
+.confirmed-icon {background:#F3E7E1;color:#A18A83}
+.confirmed-details .confirmed-price {color:#65514C}
+.confirmed-code span {color:#65514C}
+.booking-progress:before {background:#E8D5CE}
+:focus-visible {outline-color:#C5A36B}
+@media(prefers-reduced-motion:reduce) {* {scroll-behavior:auto!important;animation:none!important}}
