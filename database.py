@@ -137,3 +137,28 @@ def inicializar_banco():
 if __name__ == "__main__":
     inicializar_banco()
 
+
+
+def concluir_agendamentos_vencidos(agora=None):
+    """Conclui atendimentos ativos cujo horário de término já passou.
+
+    Usa a duração registrada no agendamento, não a duração atual do serviço.
+    Preserva cancelamentos, faltas e conclusões existentes.
+    """
+    from datetime import datetime
+
+    instante = agora or datetime.now()
+    with conectar() as conexao:
+        cursor = conexao.execute(
+            """
+            UPDATE agendamento
+               SET status = 'concluido'
+             WHERE status = 'agendado'
+               AND datetime(
+                   data || ' ' || hora,
+                   '+' || duracao_minutos || ' minutes'
+               ) <= datetime(?)
+            """,
+            (instante.strftime("%Y-%m-%d %H:%M:%S"),),
+        )
+        return cursor.rowcount
