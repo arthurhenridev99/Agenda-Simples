@@ -5,7 +5,7 @@ from functools import wraps
 from notificacoes import registrar_notificacao
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import conectar
+from database import conectar, concluir_agendamentos_vencidos
 
 app = Flask(__name__)
 
@@ -22,6 +22,14 @@ def login_obrigatorio(funcao):
         return funcao(*args, **kwargs)
 
     return verificar_login
+
+
+@app.before_request
+def sincronizar_conclusoes():
+    # Antes das consultas e alterações, persiste os status atualizados no SQLite.
+    # Ignora arquivos estáticos, sem comprometer o carregamento do visual.
+    if request.endpoint != "static":
+        concluir_agendamentos_vencidos()
 
 
 @app.route("/")
