@@ -1244,3 +1244,33 @@ a:hover {color:#E91E63}
   .brand .header-brand-mark img {width:90px}
   .brand>span:not(.brand-icon):not(.header-brand-mark) {font-size:15px}
 }
+
+/* Sidebar bege — contraste confortável no desktop e no celular. */
+.admin-layout .sidebar {
+  background:linear-gradient(175deg,#F7F1ED 0%,#F0E2D8 55%,#E8D5CE 100%);
+  border-right:1px solid #DEC8BE;
+  box-shadow:5px 0 25px #65514C0C;
+}
+.admin-layout .sidebar .brand,
+.admin-layout .sidebar .brand>span,
+.admin-layout .sidebar .profile strong {color:#4A0D1F}
+.admin-layout .sidebar .profile {border-bottom-color:#DCC6BC}
+.admin-layout .sidebar .profile small,
+.admin-layout .sidebar-bottom small {color:#805C58}
+.admin-layout .sidebar .avatar {background:#FFFFFF;color:#7A0F2E}
+.admin-layout .sidebar nav a {color:#65514C}
+.admin-layout .sidebar nav a:hover {background:#FFFFFFA8;color:#4A0D1F}
+.admin-layout .sidebar nav a.active {
+  background:#A18A83;
+  color:#FFFFFF;
+  box-shadow:0 5px 16px #65514C24;
+}
+.admin-layout .sidebar-bottom .btn-outline-primary {
+  color:#65514C;
+  background:#FFFFFFA8;
+  border-color:#CDB6AB;
+}
+.admin-layout .sidebar-bottom .btn-outline-primary:hover {background:#FFFFFF;color:#4A0D1F}
+.admin-layout .sidebar .logout {color:#65514C}
+.admin-layout .sidebar .logout:hover {color:#7A0F2E}
+.admin-layout .sidebar .mobile-menu summary {color:#65514C}
