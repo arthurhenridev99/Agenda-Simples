@@ -1152,7 +1152,7 @@ def esqueci_meu_codigo():
     erro = sucesso = None
     status = 200
     if request.method == "POST":
-        telefone = re.sub(r"\\D", "", request.form.get("telefone", ""))
+        telefone = re.sub(r"\D", "", request.form.get("telefone", ""))
         if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
             erro, status = "Formulário inválido. Atualize a página.", 400
         elif len(telefone) not in (10, 11):
