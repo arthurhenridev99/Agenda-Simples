@@ -920,6 +920,10 @@ def consultar_disponibilidade():
         elif not any(servico[0] == int(servico_texto) for servico in servicos):
             erro = "O serviço selecionado não está disponível."
 
+        elif not data_texto:
+            # Serviço escolhido: exibe o calendário antes de consultar horários.
+            pass
+
         else:
             try:
                 data_escolhida = date.fromisoformat(data_texto)
@@ -1052,10 +1056,13 @@ def agendamento_confirmado(codigo):
         agendamento = conexao.execute(
             """
             SELECT
-                s.nome, a.data, a.hora, a.codigo_atendimento
+                s.nome, a.data, a.hora, a.codigo_atendimento,
+                s.duracao, a.preco_praticado, c.nome, c.telefone
             FROM agendamento AS a
             JOIN servico AS s
               ON s.id_servico = a.id_servico
+            JOIN cliente AS c
+              ON c.id_cliente = a.id_cliente
             WHERE a.codigo_atendimento = ?
             """,
             (codigo,),
