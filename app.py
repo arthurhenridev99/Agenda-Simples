@@ -1141,45 +1141,24 @@ def consultar_agendamento():
 
 
 
-# Recuperar código de reserva por WhatsApp (modelo aprovado pela Meta).
+# Tela demonstrativa de recuperação de código (MVP, sem integração externa).
 @app.route("/esqueci-meu-codigo", methods=["GET", "POST"])
 def esqueci_meu_codigo():
     import re
-    import time
-    from whatsapp import enviar_codigo_whatsapp
 
     token = session.setdefault("csrf_esqueci_codigo", secrets.token_urlsafe(32))
-    erro = sucesso = None
+    erro = aviso = None
     status = 200
     if request.method == "POST":
-        telefone = re.sub(r"\D", "", request.form.get("telefone", ""))
+        telefone = re.sub(r"\\D", "", request.form.get("telefone", ""))
         if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
             erro, status = "Formulário inválido. Atualize a página.", 400
         elif len(telefone) not in (10, 11):
             erro, status = "Informe um WhatsApp válido com DDD.", 400
-        elif time.time() - session.get("ultima_recuperacao_codigo", 0) < 60:
-            erro, status = "Aguarde um minuto antes de solicitar novamente.", 429
         else:
-            session["ultima_recuperacao_codigo"] = time.time()
-            conexao = conectar()
-            try:
-                # Um código por solicitação: reserva ativa mais próxima.
-                reserva = conexao.execute(
-                    """SELECT a.codigo_atendimento FROM agendamento a
-                       JOIN cliente c ON c.id_cliente = a.id_cliente
-                       WHERE c.telefone = ? AND a.status = 'agendado'
-                       ORDER BY a.data ASC, a.hora ASC LIMIT 1""",
-                    (telefone,),
-                ).fetchone()
-            finally:
-                conexao.close()
-            if reserva:
-                # Falha de entrega não expõe existência de reserva.
-                enviar_codigo_whatsapp(telefone, reserva[0])
-            sucesso = ("Se existir uma reserva ativa vinculada ao número informado, "
-                       "o código será enviado pelo WhatsApp.")
+            aviso = "Esta é uma demonstração do MVP. O envio automático pelo WhatsApp não está habilitado."
     resposta = app.make_response((
-        render_template("esqueci_codigo.html", erro=erro, sucesso=sucesso, csrf_token=token),
+        render_template("esqueci_codigo.html", erro=erro, aviso=aviso, csrf_token=token),
         status,
     ))
     resposta.headers["Cache-Control"] = "no-store"
