@@ -1191,3 +1191,56 @@ a:hover {color:#E91E63}
   .btn {transition:none}
   .btn:hover {transform:none}
 }
+
+/* Ajustes solicitados: marca compacta no cabeçalho e salão bege. */
+.brand .header-brand-mark {
+  position:relative;
+  display:inline-block;
+  width:35px;
+  height:25px;
+  overflow:hidden;
+  flex:0 0 35px;
+}
+.brand .header-brand-mark img {
+  display:block;
+  position:absolute;
+  width:100px;
+  max-width:none;
+  height:auto;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+}
+.brand>span:not(.brand-icon):not(.header-brand-mark) {
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+.public-header .brand,.sidebar .brand {gap:7px}
+.salon-hero {
+  background:linear-gradient(145deg,#F5E5D8 0%,#F7EEE6 55%,#F1DCCF 100%);
+  color:#4A0D1F;
+  border-bottom:1px solid #E9D0C3;
+}
+.salon-hero h1 {color:#7A0F2E}
+.salon-hero>p {color:#805465}
+.salon-details {
+  background:#FFFFFFB8;
+  border:1px solid #E3C9BD;
+  color:#4A0D1F;
+  box-shadow:0 10px 30px #7A0F2E0C;
+}
+.salon-details>p {color:#6D3546}
+.salon-social {
+  background:#FCE4EC;
+  color:#7A0F2E;
+  border:1px solid #EAC9D3;
+}
+.salon-social:hover {background:#F8BBD0;color:#4A0D1F}
+.page-consultar_disponibilidade .salon-logo {background:transparent}
+.page-consultar_disponibilidade .salon-logo img {filter:none}
+@media(max-width:600px) {
+  .brand .header-brand-mark {width:30px;height:23px;flex-basis:30px}
+  .brand .header-brand-mark img {width:90px}
+  .brand>span:not(.brand-icon):not(.header-brand-mark) {font-size:15px}
+}
