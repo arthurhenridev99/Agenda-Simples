@@ -53,7 +53,7 @@
       </div>
     </form>
     {% if consulta_realizada %}
-    <div class="card time-card">
+    <div class="card time-card" id="horarios-disponiveis">
       <h3>◷ &nbsp; Horários Disponíveis</h3>
       <p class="text-muted" id="selected-date">{{ data_selecionada }}</p>
       {% if horarios %}
@@ -88,7 +88,28 @@
       button.type='button';button.textContent=d;button.className='calendar-day'+(iso===field.value?' selected':'');
       button.disabled=iso<min;button.setAttribute('aria-label',iso);
       if(iso===field.value)button.setAttribute('aria-pressed','true');
-      button.addEventListener('click',()=>{field.value=iso;form.submit()});grid.append(button);
+      button.addEventListener('click',async()=>{
+        if(button.disabled)return;
+        field.value=iso;
+        grid.querySelectorAll('.calendar-day').forEach(day=>{day.classList.toggle('selected',day===button);day.setAttribute('aria-pressed',String(day===button))});
+        const url=new URL(form.action||window.location.href);
+        url.search=new URLSearchParams(new FormData(form)).toString();
+        url.hash='';
+        try{
+          const response=await fetch(url.toString(),{headers:{'X-Requested-With':'XMLHttpRequest'}});
+          if(!response.ok)throw new Error('Não foi possível consultar os horários');
+          const doc=new DOMParser().parseFromString(await response.text(),'text/html');
+          const next=doc.querySelector('.time-card');
+          if(!next)throw new Error('Horários não encontrados');
+          const current=document.querySelector('.time-card');
+          if(current)current.replaceWith(next);
+          else form.insertAdjacentElement('afterend',next);
+          history.replaceState(null,'',url.pathname+url.search);
+          requestAnimationFrame(()=>next.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));
+        }catch(error){
+          window.location.assign(url.pathname+url.search+'#horarios-disponiveis');
+        }
+      });grid.append(button);
     }
     document.getElementById('prev-month').disabled=y+'-'+pad(m+1)<min.slice(0,7)||y+'-'+pad(m+1)===min.slice(0,7);
   }
