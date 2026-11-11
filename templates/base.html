@@ -39,7 +39,14 @@
 <main id="conteudo" tabindex="-1" class="page-content">
 {% with mensagens = get_flashed_messages(with_categories=true) %}{% for categoria, mensagem in mensagens %}<div class="alert alert-{{ categoria }}" role="status">{{ mensagem }}</div>{% endfor %}{% endwith %}
 {% block content %}{% endblock %}
-</main><footer class="page-footer">AgendaSimples <span>•</span> Manicure &amp; pedicure</footer>
+</main>{% if request.endpoint == 'inicio' %}
+<footer class="page-footer home-footer" aria-label="Rodapé">
+  <div class="home-footer-inner">
+    <p>© {{ current_year if current_year is defined else 2026 }} AgendaSimples. Todos os direitos reservados.</p>
+    <p class="home-footer-legal"><span>Termos de Uso</span><span aria-hidden="true">·</span><span>Política de Privacidade</span></p>
+  </div>
+</footer>
+{% endif %}
 </div>
 {% if admin %}
 <script>
