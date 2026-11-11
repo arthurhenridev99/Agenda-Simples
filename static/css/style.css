@@ -1338,35 +1338,42 @@ a:hover {color:#E91E63}
   .admin-layout .sidebar,.admin-layout .mobile-nav-overlay {transition:none}
 }
 
-/* Rodapé institucional exclusivo da página inicial. */
+/* Rodapé institucional da home: compacto no desktop e adaptativo no mobile. */
 .page-inicio .home-footer {
-  margin-top:42px;
-  padding:25px 20px 30px;
+  margin-top:40px;
+  padding:22px 20px 25px;
   border-top:1px solid #F0D9E1;
   background:#FFF8FA;
   color:#805465;
-  text-align:center;
   font-size:12px;
-  line-height:1.65;
+  line-height:1.6;
 }
 .page-inicio .home-footer-inner {
+  width:100%;
   max-width:1100px;
   margin:0 auto;
   display:flex;
+  flex-direction:column;
   align-items:center;
-  justify-content:space-between;
-  gap:10px 24px;
-  flex-wrap:wrap;
+  justify-content:center;
+  gap:6px;
+  text-align:center;
 }
 .page-inicio .home-footer p {margin:0}
 .page-inicio .home-footer-legal {
   display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
   align-items:center;
   gap:10px;
   color:#7A0F2E;
 }
 @media(max-width:760px) {
-  .page-inicio .home-footer {margin-top:28px;padding:22px 16px 26px}
-  .page-inicio .home-footer-inner {flex-direction:column;justify-content:center;gap:8px}
-  .page-inicio .home-footer-legal {justify-content:center}
+  .page-inicio .home-footer {
+    margin-top:28px;
+    padding:20px 16px 24px;
+    font-size:11px;
+  }
+  .page-inicio .home-footer-inner {gap:7px}
+  .page-inicio .home-footer-legal {gap:8px}
 }
