@@ -252,7 +252,7 @@ def painel():
             (session["id_profissional"], dia.isoformat()),
         ).fetchall()
         avisos = conexao.execute(
-            """SELECT n.tipo, c.nome, a.data, a.hora FROM notificacao n
+            """SELECT n.tipo, c.nome, a.data, a.hora, n.id_notificacao FROM notificacao n
                JOIN agendamento a ON a.id_agendamento = n.id_agendamento
                JOIN cliente c ON c.id_cliente = a.id_cliente
                JOIN servico s ON s.id_servico = a.id_servico
@@ -279,6 +279,7 @@ def painel():
     return render_template(
         "painel.html", nome=session["nome_profissional"], atendimentos=atendimentos,
         totais=totais, avisos=avisos, dia=dia, erro=erro,
+        csrf_notificacoes=session.setdefault("csrf_notificacoes", secrets.token_urlsafe(32)),
         anterior=(dia - timedelta(days=1)).isoformat() if dia > date.min else None,
         proximo=(dia + timedelta(days=1)).isoformat() if dia < date.max else None,
         servicos_ativos=servicos_ativos, periodos=periodos,
@@ -1825,6 +1826,8 @@ def marcar_notificacao_lida(id_notificacao):
     finally:
         conexao.close()
 
+    if request.form.get("origem") == "painel":
+        return redirect(url_for("painel"))
     return redirect(url_for("listar_notificacoes"))
 
 
