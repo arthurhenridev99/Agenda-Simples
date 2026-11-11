@@ -42,8 +42,6 @@
 {% for atendimento in atendimentos %}<article class="appointment"><span class="avatar" aria-hidden="true">{{ atendimento[1][:1]|upper }}</span><div class="appointment-client"><strong>{{ atendimento[1] }}</strong><span>{{ atendimento[2] }} · {{ atendimento[4] }} min</span></div><strong class="appointment-time">{{ atendimento[0] }}</strong><span class="status status-{{ atendimento[3] }}">{{ rotulos[atendimento[3]] }}</span></article>
 {% else %}<div class="empty-state"><span aria-hidden="true">▦</span><h3>Um espaço livre na sua agenda</h3><p>Nenhum atendimento nesta data. Consulte outros dias ou confira seus horários.</p><a class="btn btn-outline-primary" href="{{ url_for('listar_horarios') }}">Consultar horários</a></div>{% endfor %}
 </section>
-{% endblock %}
-
 <style>
 /* Ações das notificações: cabeçalho flexível, sem empilhar o botão em telas estreitas. */
 .dashboard-notice { display:flex; align-items:flex-start; gap:8px; min-width:0; }
@@ -67,3 +65,4 @@
   .dashboard-notice-link { font-size:10px; padding:6px 8px; }
 }
 </style>
+{% endblock %}
