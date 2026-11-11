@@ -269,7 +269,7 @@ def painel():
             (session["id_profissional"],),
         ).fetchone()[0]
         estabelecimento = conexao.execute(
-            "SELECT nome_empresa, cidade FROM profissional WHERE id_profissional = ?",
+            "SELECT nome_empresa, cidade, configuracao_concluida FROM profissional WHERE id_profissional = ?",
             (session["id_profissional"],),
         ).fetchone()
     finally:
@@ -283,7 +283,20 @@ def painel():
         proximo=(dia + timedelta(days=1)).isoformat() if dia < date.max else None,
         servicos_ativos=servicos_ativos, periodos=periodos,
         estabelecimento_configurado=bool(estabelecimento and estabelecimento[0].strip() and estabelecimento[1].strip()),
+        configuracao_pendente=bool(estabelecimento and not estabelecimento[2]),
     )
+
+
+def configuracao_inicial_pendente():
+    """O assistente aparece somente até a primeira conclusão."""
+    from database import atualizar_cadastro_profissional
+    with conectar() as conexao:
+        atualizar_cadastro_profissional(conexao)
+        registro = conexao.execute(
+            "SELECT configuracao_concluida FROM profissional WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()
+    return bool(registro and not registro[0])
 
 
 # Configuração dos dados do estabelecimento
@@ -306,6 +319,7 @@ def configurar_estabelecimento():
         if registro is None:
             return redirect(url_for("login"))
         dados = dict(zip(campos, registro))
+        configuracao_pendente = configuracao_inicial_pendente()
         if request.method == "POST":
             dados = {campo: request.form.get(campo, "").strip() for campo in campos}
             dados["cep"] = re.sub(r"\D", "", dados["cep"])
@@ -318,16 +332,37 @@ def configurar_estabelecimento():
             elif any(len(valor) > (150 if campo in ("complemento", "frase_estabelecimento") else 100) for campo, valor in dados.items()):
                 erro = "Um dos campos ultrapassou o limite de caracteres."
             else:
-                conexao.execute(
+                finalizar = configuracao_pendente and request.form.get("finalizar_configuracao") == "1"
+                if finalizar:
+                    tem_servico = conexao.execute(
+                        "SELECT 1 FROM servico WHERE id_profissional = ? AND ativo = 1 LIMIT 1",
+                        (session["id_profissional"],),
+                    ).fetchone()
+                    tem_horario = conexao.execute(
+                        "SELECT 1 FROM horario_atendimento WHERE id_profissional = ? LIMIT 1",
+                        (session["id_profissional"],),
+                    ).fetchone()
+                    if not tem_servico or not tem_horario:
+                        erro = "Antes de finalizar, cadastre pelo menos um serviço ativo e um horário de atendimento."
+                if not erro:
+                    conexao.execute(
                     "UPDATE profissional SET " + ", ".join(campo + " = ?" for campo in campos)
                     + " WHERE id_profissional = ?",
                     (*[dados[campo] for campo in campos], session["id_profissional"]),
-                )
-                conexao.commit()
-                sucesso = "Dados do estabelecimento salvos com sucesso."
+                    )
+                    if finalizar:
+                        conexao.execute(
+                            "UPDATE profissional SET configuracao_concluida = 1 WHERE id_profissional = ?",
+                            (session["id_profissional"],),
+                        )
+                    conexao.commit()
+                    if finalizar:
+                        return redirect(url_for("painel"))
+                    sucesso = "Dados do estabelecimento salvos com sucesso."
     finally:
         conexao.close()
-    return render_template("estabelecimento.html", dados=dados, erro=erro, sucesso=sucesso, csrf_token=token)
+    return render_template("estabelecimento.html", dados=dados, erro=erro, sucesso=sucesso, csrf_token=token,
+                           configuracao_pendente=configuracao_pendente)
 
 
 # Encerrar sessão
@@ -411,7 +446,9 @@ def listar_servicos():
         conexao.close()
 
     return render_template(
-        "servicos.html", servicos=servicos, erro=erro, csrf_token=token
+        "servicos.html", servicos=servicos, erro=erro, csrf_token=token,
+        configuracao_pendente=configuracao_inicial_pendente(),
+        pode_avancar=any(servico[4] for servico in servicos)
     )
 
 
@@ -659,6 +696,8 @@ def listar_horarios():
     return render_template(
         "horarios.html",
         horarios=horarios,
+        configuracao_pendente=configuracao_inicial_pendente(),
+        pode_avancar=bool(horarios),
         dias_semana=dias_semana,
         erro=erro,
         csrf_token=token,
