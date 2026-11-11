@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Gerenciar Serviços{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-4"><h1 class="mb-0">Gerenciar Serviços</h1>{% if configuracao_pendente %}<a class="btn btn-primary" href="{{ url_for('listar_horarios') }}" {% if not pode_avancar %}aria-disabled="true" tabindex="-1" style="pointer-events:none;opacity:.55"{% endif %}>Avançar para horários →</a>{% endif %}</div>
+<h1 class="mb-4">Gerenciar Serviços</h1>
 {% if configuracao_pendente %}<p class="text-muted">Passo 1 de 3 · Comece cadastrando pelo menos um serviço. Depois, avance para definir seus horários de atendimento.</p>{% endif %}
 
         <div class="card shadow-sm mb-4">
@@ -117,7 +117,10 @@
             </div>
         </div>
 
-        <a href="/painel" class="btn btn-secondary mt-3">
-            Voltar ao painel
-        </a>
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+            <a href="{{ url_for('painel') }}" class="btn btn-secondary">Voltar ao painel</a>
+            {% if configuracao_pendente %}
+            <a class="btn btn-primary" href="{{ url_for('listar_horarios') }}" {% if not pode_avancar %}aria-disabled="true" tabindex="-1" style="pointer-events:none;opacity:.55"{% endif %}>Avançar para horários →</a>
+            {% endif %}
+        </div>
 {% endblock %}
