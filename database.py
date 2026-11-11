@@ -26,6 +26,7 @@ def atualizar_cadastro_profissional(conexao):
             "bairro": "TEXT NOT NULL DEFAULT ''",
             "cep": "TEXT NOT NULL DEFAULT ''",
             "cidade": "TEXT NOT NULL DEFAULT ''",
+            "configuracao_concluida": "INTEGER NOT NULL DEFAULT 0",
         }
         for campo, definicao in campos.items():
             if campo not in colunas:
