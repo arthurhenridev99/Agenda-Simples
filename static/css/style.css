@@ -1430,3 +1430,8 @@ a:hover {color:#E91E63}
   text-align:center;
 }
 .page-inicio #footer-mvp-aviso[hidden] {display:none}
+
+/* Respiro entre o destaque e os três passos, somente no desktop. */
+@media (min-width: 761px) {
+  .page-inicio .public-hero + .steps { margin-top: 16px; }
+}
