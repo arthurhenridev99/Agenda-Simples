@@ -49,10 +49,7 @@ def cadastro():
     conexao = conectar()
     try:
         atualizar_cadastro_profissional(conexao)
-        # O MVP permite apenas uma profissional. Após o primeiro cadastro,
-        # a página de cadastro deixa de estar disponível.
-        if conexao.execute("SELECT 1 FROM profissional LIMIT 1").fetchone():
-            return redirect(url_for("login"))
+        # A tela permanece acessível, mas apenas a primeira conta pode ser criada.
         if request.method == "POST":
             nome = request.form.get("nome", "").strip()
             email = request.form.get("email", "").strip().lower()
@@ -83,7 +80,7 @@ def cadastro():
                     ).fetchone()
                     if existente:
                         conexao.rollback()
-                        return redirect(url_for("login"))
+                        erro = "Já existe um profissional cadastrado."
                     else:
                         conexao.execute(
                             "INSERT INTO profissional (nome, login, senha_hash, whatsapp) VALUES (?, ?, ?, ?)",
