@@ -854,110 +854,62 @@ def editar_horario(id_horario):
 @login_obrigatorio
 def listar_bloqueios():
     import re
-    from datetime import date
+    from database import atualizar_bloqueios_semanais
 
     erro = None
     formulario = request.form
-
-    token = session.get("csrf_bloqueios")
-    if not token:
-        token = secrets.token_urlsafe(32)
-        session["csrf_bloqueios"] = token
-
+    dias_semana = ("Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira",
+                   "Sexta-feira", "Sábado", "Domingo")
+    token = session.setdefault("csrf_bloqueios", secrets.token_urlsafe(32))
     conexao = conectar()
-
     try:
+        atualizar_bloqueios_semanais(conexao)
         if request.method == "POST":
-            token_recebido = formulario.get("csrf_token", "")
-            data_texto = formulario.get("data", "")
+            dia_texto = formulario.get("dia_semana", "")
             hora_inicio = formulario.get("hora_inicio", "")
             hora_fim = formulario.get("hora_fim", "")
+            formato_hora = r"(?:[01]\\d|2[0-3]):[0-5]\\d"
 
-            try:
-                if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", data_texto):
-                    raise ValueError
-                data_bloqueio = date.fromisoformat(data_texto)
-            except ValueError:
-                data_bloqueio = None
-
-            formato_hora = r"(?:[01]\d|2[0-3]):[0-5]\d"
-
-            if not secrets.compare_digest(token, token_recebido):
+            if not secrets.compare_digest(token, formulario.get("csrf_token", "")):
                 erro = "Formulário inválido. Atualize a página."
-
-            elif data_bloqueio is None:
-                erro = "Informe uma data válida."
-
-            elif data_bloqueio < date.today():
-                erro = "Não é permitido cadastrar bloqueios em datas passadas."
-
-            elif not (
-                re.fullmatch(formato_hora, hora_inicio)
-                and re.fullmatch(formato_hora, hora_fim)
-            ):
+            elif dia_texto not in tuple(str(d) for d in range(7)):
+                erro = "Selecione um dia da semana válido."
+            elif not (re.fullmatch(formato_hora, hora_inicio) and re.fullmatch(formato_hora, hora_fim)):
                 erro = "Informe horários válidos."
-
             elif hora_inicio >= hora_fim:
                 erro = "O horário inicial deve ser anterior ao final."
-
             else:
+                dia_semana = int(dia_texto)
                 conflito = conexao.execute(
-                    """
-                    SELECT id_bloqueio
-                    FROM bloqueio
-                    WHERE id_profissional = ?
-                      AND data = ?
-                      AND hora_inicio < ?
-                      AND hora_fim > ?
-                    LIMIT 1
-                    """,
-                    (
-                        session["id_profissional"],
-                        data_texto,
-                        hora_fim,
-                        hora_inicio,
-                    ),
+                    """SELECT 1 FROM bloqueio
+                       WHERE id_profissional = ? AND dia_semana = ?
+                         AND hora_inicio < ? AND hora_fim > ? LIMIT 1""",
+                    (session["id_profissional"], dia_semana, hora_fim, hora_inicio),
                 ).fetchone()
-
                 if conflito:
-                    erro = "Este período já possui um bloqueio."
+                    erro = "Este dia já possui um bloqueio nesse período."
                 else:
+                    # A coluna data é preservada para compatibilidade com o esquema antigo.
+                    # Bloqueios recorrentes são identificados exclusivamente por dia_semana.
                     conexao.execute(
-                        """
-                        INSERT INTO bloqueio
-                            (id_profissional, data, hora_inicio, hora_fim)
-                        VALUES (?, ?, ?, ?)
-                        """,
-                        (
-                            session["id_profissional"],
-                            data_texto,
-                            hora_inicio,
-                            hora_fim,
-                        ),
+                        """INSERT INTO bloqueio (id_profissional, data, dia_semana, hora_inicio, hora_fim)
+                           VALUES (?, '', ?, ?, ?)""",
+                        (session["id_profissional"], dia_semana, hora_inicio, hora_fim),
                     )
-
                     conexao.commit()
                     return redirect(url_for("listar_bloqueios"))
 
         bloqueios = conexao.execute(
-            """
-            SELECT id_bloqueio, data, hora_inicio, hora_fim
-            FROM bloqueio
-            WHERE id_profissional = ?
-            ORDER BY data, hora_inicio
-            """,
+            """SELECT id_bloqueio, dia_semana, hora_inicio, hora_fim, data
+               FROM bloqueio WHERE id_profissional = ?
+               ORDER BY CASE WHEN dia_semana IS NULL THEN 1 ELSE 0 END,
+                        dia_semana, hora_inicio, data""",
             (session["id_profissional"],),
         ).fetchall()
-
         return render_template(
-            "bloqueios.html",
-            bloqueios=bloqueios,
-            erro=erro,
-            csrf_token=token,
-            data_minima=date.today().isoformat(),
-            formulario=formulario,
+            "bloqueios.html", bloqueios=bloqueios, erro=erro,
+            csrf_token=token, formulario=formulario, dias_semana=dias_semana,
         )
-
     finally:
         conexao.close()
 
