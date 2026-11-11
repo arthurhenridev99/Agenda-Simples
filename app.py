@@ -49,6 +49,10 @@ def cadastro():
     conexao = conectar()
     try:
         atualizar_cadastro_profissional(conexao)
+        # O MVP permite apenas uma profissional. Após o primeiro cadastro,
+        # a página de cadastro deixa de estar disponível.
+        if conexao.execute("SELECT 1 FROM profissional LIMIT 1").fetchone():
+            return redirect(url_for("login"))
         if request.method == "POST":
             nome = request.form.get("nome", "").strip()
             email = request.form.get("email", "").strip().lower()
@@ -72,12 +76,14 @@ def cadastro():
                 # Contas antigas continuam aceitando seu login original.
                 try:
                     conexao.execute("BEGIN IMMEDIATE")
+                    # Verificação dentro da transação: impede duas contas criadas
+                    # simultaneamente por requisições concorrentes.
                     existente = conexao.execute(
-                        "SELECT 1 FROM profissional WHERE lower(login) = ?", (email,)
+                        "SELECT 1 FROM profissional LIMIT 1"
                     ).fetchone()
                     if existente:
-                        erro = "Não foi possível criar a conta com este e-mail. Entre ou recupere sua senha."
                         conexao.rollback()
+                        return redirect(url_for("login"))
                     else:
                         conexao.execute(
                             "INSERT INTO profissional (nome, login, senha_hash, whatsapp) VALUES (?, ?, ?, ?)",
