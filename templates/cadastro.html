@@ -20,5 +20,28 @@
   {% endif %}
   <p class="text-center mt-3 mb-0">Já tem uma conta? <a href="{{ url_for('login') }}">Entrar</a></p>
 </div></section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const campo = document.getElementById("whatsapp");
+  if (!campo) return;
+
+  function formatarWhatsapp(valor) {
+    const digitos = valor.replace(/\D/g, "").slice(0, 11);
+    if (!digitos) return "";
+    if (digitos.length <= 2) return "(" + digitos;
+    const ddd = "(" + digitos.slice(0, 2) + ") ";
+    const numero = digitos.slice(2);
+    if (numero.length <= 4) return ddd + numero;
+    const limite = digitos.length > 10 ? 5 : 4;
+    if (numero.length <= limite) return ddd + numero;
+    return ddd + numero.slice(0, limite) + "-" + numero.slice(limite);
+  }
+
+  campo.addEventListener("input", function () {
+    campo.value = formatarWhatsapp(campo.value);
+  });
+  campo.value = formatarWhatsapp(campo.value);
+});
+</script>
 <script src="{{ url_for('static', filename='js/senhas.js') }}" defer></script>
 {% endblock %}
