@@ -10,10 +10,13 @@
 <body class="{{ 'admin-layout' if admin else 'public-layout' }} page-{{ request.endpoint }}">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 {% if admin %}
-<aside class="sidebar">
+<button class="mobile-nav-toggle" type="button" aria-label="Abrir menu de navegação" aria-controls="menu-profissional" aria-expanded="false"><span aria-hidden="true">☰</span></button>
+<div class="mobile-nav-overlay" aria-hidden="true"></div>
+<aside class="sidebar" id="menu-profissional">
   <a class="brand" href="{{ url_for('painel') }}"><span class="header-brand-mark" aria-hidden="true"><img src="{{ url_for('static', filename='img/logo-agendasimples.webp') }}" alt="" width="100" height="36" decoding="async"></span><span>AgendaSimples</span></a>
+  <button class="mobile-nav-close" type="button" aria-label="Fechar menu">×</button>
   <div class="profile"><span class="avatar">{{ session.get('nome_profissional', 'P')[:1]|upper }}</span><div><small>Bem-vinda,</small><strong>{{ session.get('nome_profissional', 'Profissional') }}</strong></div></div>
-  <details class="mobile-menu" open><summary>Menu de navegação</summary>
+  <div class="mobile-menu">
   <nav aria-label="Menu principal">
   {% for endpoint, label, icon, group in [
     ('painel','Dashboard','⌂',['painel']),
@@ -25,7 +28,7 @@
     ('listar_notificacoes','Notificações','♧',['listar_notificacoes'])] %}
     <a href="{{ url_for(endpoint) }}" {% if request.endpoint in group %}class="active" aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span>{{ label }}</a>
   {% endfor %}
-  </nav></details>
+  </nav></div>
   <div class="sidebar-bottom"><a class="btn btn-outline-primary" href="{{ url_for('inicio') }}">Ver página pública ↗</a><form method="POST" action="{{ url_for('sair') }}"><button class="logout" type="submit">Sair da conta</button></form><small>Seu tempo, bem cuidado.</small></div>
 </aside>
 {% else %}
@@ -38,5 +41,51 @@
 {% block content %}{% endblock %}
 </main><footer class="page-footer">AgendaSimples <span>•</span> Manicure &amp; pedicure</footer>
 </div>
+{% if admin %}
+<script>
+(function () {
+  const body = document.body;
+  const toggle = document.querySelector(".mobile-nav-toggle");
+  const close = document.querySelector(".mobile-nav-close");
+  const overlay = document.querySelector(".mobile-nav-overlay");
+  const sidebar = document.querySelector("#menu-profissional");
+  if (!toggle || !sidebar) return;
+  function setOpen(open) {
+    body.classList.toggle("mobile-nav-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Fechar menu de navegação" : "Abrir menu de navegação");
+    if (open) { close.focus(); } else { toggle.focus(); }
+  }
+  toggle.addEventListener("click", () => setOpen(!body.classList.contains("mobile-nav-open")));
+  close.addEventListener("click", () => setOpen(false));
+  overlay.addEventListener("click", () => setOpen(false));
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && body.classList.contains("mobile-nav-open")) setOpen(false);
+  });
+  let startX = null, startY = null;
+  document.addEventListener("touchstart", e => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    if (body.classList.contains("mobile-nav-open") || touch.clientX < 32) {
+      startX = touch.clientX;
+      startY = touch.clientY;
+    }
+  }, {passive:true});
+  document.addEventListener("touchend", e => {
+    if (startX === null || e.changedTouches.length !== 1) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0 && body.classList.contains("mobile-nav-open")) setOpen(false);
+      else if (dx > 0 && !body.classList.contains("mobile-nav-open")) setOpen(true);
+    }
+    startX = startY = null;
+  }, {passive:true});
+  window.matchMedia("(min-width: 761px)").addEventListener("change", e => {
+    if (e.matches && body.classList.contains("mobile-nav-open")) setOpen(false);
+  });
+})();
+</script>
+{% endif %}
 </body>
 </html>
