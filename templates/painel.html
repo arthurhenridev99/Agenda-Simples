@@ -3,10 +3,18 @@
 {% block content %}
 <div class="page-heading"><div><p class="eyebrow">SEU DIA, ORGANIZADO</p><h1>Dashboard</h1><p class="text-muted">Bem-vinda, {{ nome }}. Vamos cuidar da sua agenda?</p></div><a class="btn btn-primary" href="{{ url_for('agenda_profissional', data=dia.isoformat()) }}">Ver agenda do dia ↗</a></div>
 {% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
-{% if not servicos_ativos or not periodos or not estabelecimento_configurado %}
-<section class="welcome-card"><span class="welcome-spark" aria-hidden="true">✦</span><div><h2>Vamos preparar sua agenda online</h2><p>Cadastre seus serviços, defina seus horários e configure os dados do estabelecimento para receber agendamentos.</p><div class="d-flex gap-2 flex-wrap"><a class="btn btn-primary" href="{{ url_for('listar_servicos') }}">{{ '✓' if servicos_ativos else '1.' }} Seus serviços</a><a class="btn btn-outline-primary" href="{{ url_for('listar_horarios') }}">{{ '✓' if periodos else '2.' }} Seus horários</a><a class="btn btn-outline-primary" href="{{ url_for('configurar_estabelecimento') }}">{{ '✓' if estabelecimento_configurado else '3.' }} Seu estabelecimento</a></div></div></section>
-{% endif %}
-<section class="card updates"><div class="section-heading"><h2>Últimas novidades</h2><a href="{{ url_for('listar_notificacoes') }}">Ver notificações →</a></div>
+{% if configuracao_pendente %}
+<section class="welcome-card"><span class="welcome-spark" aria-hidden="true">✦</span><div style="width:100%">
+<h2>Seu espaço está quase pronto para receber clientes!</h2>
+<p>Vamos preparar sua agenda em três passos simples? Você cadastra seus serviços, escolhe seus horários e personaliza seu estabelecimento.</p>
+<div class="d-flex gap-2 flex-wrap" style="align-items:center;margin-bottom:14px">
+<span class="btn btn-outline-primary" style="pointer-events:none">{{ '✓' if servicos_ativos else '1.' }} Serviços</span>
+<span class="btn btn-outline-primary" style="pointer-events:none">{{ '✓' if periodos else '2.' }} Horários</span>
+<span class="btn btn-outline-primary" style="pointer-events:none">{{ '✓' if estabelecimento_configurado else '3.' }} Estabelecimento</span>
+</div>
+<a class="btn btn-primary" href="{{ url_for('listar_servicos') }}" style="max-width:100%;white-space:normal;text-align:center">Começar minha configuração →</a>
+</div></section>
+{% endif %}section class="card updates"><div class="section-heading"><h2>Últimas novidades</h2><a href="{{ url_for('listar_notificacoes') }}">Ver notificações →</a></div>
 {% set eventos = {'novo_agendamento':'Novo agendamento', 'cancelamento':'Cancelamento', 'reagendamento':'Reagendamento', 'conclusao':'Atendimento concluído', 'falta':'Falta registrada'} %}
 {% for aviso in avisos %}<div class="update-row"><span class="notification-dot" aria-hidden="true"></span><div><strong>{{ eventos.get(aviso[0], aviso[0]) }}</strong><p>{{ aviso[1] }} <span class="text-muted">· {{ aviso[2][8:10] }}/{{ aviso[2][5:7] }}/{{ aviso[2][:4] }} às {{ aviso[3] }}</span></p></div></div>{% else %}<p class="quiet-state">Tudo em dia. Nenhuma notificação pendente.</p>{% endfor %}</section>
 <form class="date-bar" method="GET"><a class="date-arrow" aria-label="Dia anterior" href="{{ url_for('painel', data=anterior or dia.isoformat()) }}">‹</a><div><label for="dia-dashboard">Agenda do dia</label><input id="dia-dashboard" type="date" name="data" value="{{ dia.isoformat() }}" required><button class="btn btn-sm btn-outline-primary" type="submit">Ver dia</button></div><a class="date-arrow" aria-label="Próximo dia" href="{{ url_for('painel', data=proximo or dia.isoformat()) }}">›</a></form>
