@@ -298,7 +298,7 @@ def configurar_estabelecimento():
     conexao = conectar()
     try:
         atualizar_cadastro_profissional(conexao)
-        campos = ("nome_empresa", "logradouro", "numero", "complemento", "bairro", "cep", "cidade")
+        campos = ("nome_empresa", "frase_estabelecimento", "logradouro", "numero", "complemento", "bairro", "cep", "cidade")
         registro = conexao.execute(
             "SELECT " + ", ".join(campos) + " FROM profissional WHERE id_profissional = ?",
             (session["id_profissional"],),
@@ -311,11 +311,11 @@ def configurar_estabelecimento():
             dados["cep"] = re.sub(r"\D", "", dados["cep"])
             if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
                 erro = "Formulário inválido. Atualize a página e tente novamente."
-            elif any(not dados[campo] for campo in ("nome_empresa", "logradouro", "numero", "bairro", "cep", "cidade")):
+            elif any(not dados[campo] for campo in ("nome_empresa", "frase_estabelecimento", "logradouro", "numero", "bairro", "cep", "cidade")):
                 erro = "Preencha todos os campos obrigatórios."
             elif len(dados["cep"]) != 8:
                 erro = "Informe um CEP válido com 8 dígitos."
-            elif any(len(valor) > (150 if campo == "complemento" else 100) for campo, valor in dados.items()):
+            elif any(len(valor) > (150 if campo in ("complemento", "frase_estabelecimento") else 100) for campo, valor in dados.items()):
                 erro = "Um dos campos ultrapassou o limite de caracteres."
             else:
                 conexao.execute(
@@ -975,7 +975,7 @@ def consultar_disponibilidade():
             ORDER BY nome
             """).fetchall()
         estabelecimento = conexao.execute("""
-            SELECT nome_empresa, cidade, whatsapp
+            SELECT nome_empresa, cidade, whatsapp, frase_estabelecimento
             FROM profissional
             WHERE trim(nome_empresa) != '' AND trim(cidade) != ''
             ORDER BY id_profissional LIMIT 1
