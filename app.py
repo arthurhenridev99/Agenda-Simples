@@ -266,6 +266,10 @@ def painel():
             "SELECT COUNT(*) FROM horario_atendimento WHERE id_profissional = ?",
             (session["id_profissional"],),
         ).fetchone()[0]
+        estabelecimento = conexao.execute(
+            "SELECT nome_empresa, cidade FROM profissional WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()
     finally:
         conexao.close()
     totais = {status: sum(a[3] == status for a in atendimentos)
@@ -276,7 +280,52 @@ def painel():
         anterior=(dia - timedelta(days=1)).isoformat() if dia > date.min else None,
         proximo=(dia + timedelta(days=1)).isoformat() if dia < date.max else None,
         servicos_ativos=servicos_ativos, periodos=periodos,
+        estabelecimento_configurado=bool(estabelecimento and estabelecimento[0].strip() and estabelecimento[1].strip()),
     )
+
+
+# Configuração dos dados do estabelecimento
+@app.route("/estabelecimento", methods=["GET", "POST"])
+@login_obrigatorio
+def configurar_estabelecimento():
+    import re
+    from database import atualizar_cadastro_profissional
+
+    erro = sucesso = None
+    token = session.setdefault("csrf_estabelecimento", secrets.token_urlsafe(32))
+    conexao = conectar()
+    try:
+        atualizar_cadastro_profissional(conexao)
+        campos = ("nome_empresa", "logradouro", "numero", "complemento", "bairro", "cep", "cidade")
+        registro = conexao.execute(
+            "SELECT " + ", ".join(campos) + " FROM profissional WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()
+        if registro is None:
+            return redirect(url_for("login"))
+        dados = dict(zip(campos, registro))
+        if request.method == "POST":
+            dados = {campo: request.form.get(campo, "").strip() for campo in campos}
+            dados["cep"] = re.sub(r"\\D", "", dados["cep"])
+            if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+                erro = "Formulário inválido. Atualize a página e tente novamente."
+            elif any(not dados[campo] for campo in ("nome_empresa", "logradouro", "numero", "bairro", "cep", "cidade")):
+                erro = "Preencha todos os campos obrigatórios."
+            elif len(dados["cep"]) != 8:
+                erro = "Informe um CEP válido com 8 dígitos."
+            elif any(len(valor) > (150 if campo == "complemento" else 100) for campo, valor in dados.items()):
+                erro = "Um dos campos ultrapassou o limite de caracteres."
+            else:
+                conexao.execute(
+                    "UPDATE profissional SET " + ", ".join(campo + " = ?" for campo in campos)
+                    + " WHERE id_profissional = ?",
+                    (*[dados[campo] for campo in campos], session["id_profissional"]),
+                )
+                conexao.commit()
+                sucesso = "Dados do estabelecimento salvos com sucesso."
+    finally:
+        conexao.close()
+    return render_template("estabelecimento.html", dados=dados, erro=erro, sucesso=sucesso, csrf_token=token)
 
 
 # Encerrar sessão
@@ -921,6 +970,12 @@ def consultar_disponibilidade():
             WHERE ativo = 1
             ORDER BY nome
             """).fetchall()
+        estabelecimento = conexao.execute("""
+            SELECT nome_empresa, cidade, whatsapp
+            FROM profissional
+            WHERE trim(nome_empresa) != '' AND trim(cidade) != ''
+            ORDER BY id_profissional LIMIT 1
+        """).fetchone()
     finally:
         conexao.close()
 
@@ -960,6 +1015,7 @@ def consultar_disponibilidade():
     return render_template(
         "disponibilidade.html",
         servicos=servicos,
+        estabelecimento=estabelecimento,
         servico_selecionado=servico_texto,
         data_selecionada=data_texto,
         data_minima=date.today().isoformat(),
