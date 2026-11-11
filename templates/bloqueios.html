@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Bloqueio de Horários</h1>
         <p class="text-muted">
-            Bloqueie períodos em que não poderá realizar atendimentos.
+            Organize suas pausas e intervalos por dia da semana. Os bloqueios se repetem automaticamente toda semana, sem precisar cadastrar cada data.
         </p>
 
         <div class="card shadow-sm mb-4">
@@ -20,11 +20,14 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
                     <div class="mb-3">
-                        <label for="data" class="form-label">
-                            Data do bloqueio
-                        </label>
-                        <input type="date" id="data" name="data" class="form-control" min="{{ data_minima }}"
-                            value="{{ formulario.get('data', '') }}" required>
+                        <label for="dia_semana" class="form-label">Dia da semana</label>
+                        <select id="dia_semana" name="dia_semana" class="form-select" required>
+                            <option value="">Selecione o dia</option>
+                            {% for dia in dias_semana %}
+                            <option value="{{ loop.index0 }}" {% if formulario.get('dia_semana') == loop.index0|string %}selected{% endif %}>{{ dia }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-muted" style="margin-top:8px">Por exemplo: bloqueie o almoço de segunda a sexta das 12h às 13h e configure um intervalo diferente para sábado.</p>
                     </div>
 
                     <div class="row mb-3">
@@ -61,7 +64,7 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th scope="col">Data</th>
+                                <th scope="col">Dia da semana</th>
                                 <th scope="col">Início</th>
                                 <th scope="col">Término</th>
                                 <th scope="col">Ações</th>
@@ -71,7 +74,7 @@
 
                             {% for bloqueio in bloqueios %}
                             <tr>
-                                <td>{{ bloqueio[1] }}</td>
+                                <td>{{ dias_semana[bloqueio[1]] if bloqueio[1] is not none else 'Data específica: ' ~ bloqueio[4][8:10] ~ '/' ~ bloqueio[4][5:7] ~ '/' ~ bloqueio[4][:4] }}</td>
                                 <td>{{ bloqueio[2] }}</td>
                                 <td>{{ bloqueio[3] }}</td>
 
