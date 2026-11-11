@@ -1377,3 +1377,29 @@ a:hover {color:#E91E63}
   .page-inicio .home-footer-inner {gap:7px}
   .page-inicio .home-footer-legal {gap:8px}
 }
+
+/* Ícones vetoriais das informações e redes do salão. */
+.salon-details .salon-icon {
+  display:inline-block;
+  width:16px;
+  height:16px;
+  flex:0 0 16px;
+  vertical-align:middle;
+  color:inherit;
+}
+.salon-details > p:not(.mvp-notice) {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+}
+.salon-details .salon-social {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+}
+@media(max-width:480px) {
+  .salon-details .salon-icon {width:15px;height:15px;flex-basis:15px}
+  .salon-details .salon-social {gap:7px}
+}
