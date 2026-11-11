@@ -22,9 +22,29 @@
     <input type="hidden" name="data" value="{{ data }}">
     <input type="hidden" name="hora" value="{{ hora }}">
     <div class="mb-3"><label for="nome">Nome Completo *</label><input class="form-control" id="nome" name="nome" placeholder="Digite seu nome completo" value="{{ request.form.get('nome', '') }}" maxlength="100" required></div>
-    <div class="mb-3"><label for="telefone">Telefone/WhatsApp *</label><input class="form-control" type="tel" id="telefone" name="telefone" placeholder="(00) 0 0000-0000" value="{{ request.form.get('telefone', '') }}" inputmode="tel" required><small class="text-muted">Digite DDD + número</small></div>
+    <div class="mb-3"><label for="telefone">Telefone/WhatsApp *</label><input class="form-control" type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel" value="{{ request.form.get('telefone', '') }}" inputmode="tel" required><small class="text-muted">Digite DDD + número</small></div>
     <button class="btn btn-primary w-100" type="submit">🎉 Confirmar Agendamento</button>
     <a class="btn btn-outline-primary w-100 mt-3" href="{{ url_for('consultar_disponibilidade', servico=servico[0], data=data) }}#escolher-data">Voltar</a>
   </form>
+  <script>
+    (function () {
+      const campo = document.getElementById('telefone');
+      if (!campo) return;
+      function formatarTelefone(valor) {
+        const digitos = valor.replace(/\D/g, '').slice(0, 11);
+        if (!digitos) return '';
+        if (digitos.length <= 2) return '(' + digitos;
+        const ddd = '(' + digitos.slice(0, 2) + ') ';
+        const numero = digitos.slice(2);
+        if (numero.length <= 4) return ddd + numero;
+        const inicio = numero.length > 8 ? 5 : 4;
+        return ddd + numero.slice(0, inicio) + '-' + numero.slice(inicio);
+      }
+      campo.addEventListener('input', function () {
+        campo.value = formatarTelefone(campo.value);
+      });
+      campo.value = formatarTelefone(campo.value);
+    })();
+  </script>
 </section>
 {% endblock %}
