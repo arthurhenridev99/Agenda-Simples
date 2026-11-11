@@ -868,7 +868,7 @@ def listar_bloqueios():
             dia_texto = formulario.get("dia_semana", "")
             hora_inicio = formulario.get("hora_inicio", "")
             hora_fim = formulario.get("hora_fim", "")
-            formato_hora = r"(?:[01]\\d|2[0-3]):[0-5]\\d"
+            formato_hora = r"(?:[01]\d|2[0-3]):[0-5]\d"
 
             if not secrets.compare_digest(token, formulario.get("csrf_token", "")):
                 erro = "Formulário inválido. Atualize a página."
