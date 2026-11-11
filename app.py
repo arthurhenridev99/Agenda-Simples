@@ -242,6 +242,8 @@ def painel():
         erro = "Data inválida. Exibindo a agenda de hoje."
     conexao = conectar()
     try:
+        from database import atualizar_cadastro_profissional
+        atualizar_cadastro_profissional(conexao)
         atendimentos = conexao.execute(
             """SELECT a.hora, c.nome, s.nome, a.status, a.duracao_minutos
                FROM agendamento a JOIN cliente c ON c.id_cliente = a.id_cliente
@@ -964,6 +966,8 @@ def consultar_disponibilidade():
     conexao = conectar()
 
     try:
+        from database import atualizar_cadastro_profissional
+        atualizar_cadastro_profissional(conexao)
         servicos = conexao.execute("""
             SELECT id_servico, nome, preco, duracao
             FROM servico
