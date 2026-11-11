@@ -308,7 +308,7 @@ def configurar_estabelecimento():
         dados = dict(zip(campos, registro))
         if request.method == "POST":
             dados = {campo: request.form.get(campo, "").strip() for campo in campos}
-            dados["cep"] = re.sub(r"\\D", "", dados["cep"])
+            dados["cep"] = re.sub(r"\D", "", dados["cep"])
             if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
                 erro = "Formulário inválido. Atualize a página e tente novamente."
             elif any(not dados[campo] for campo in ("nome_empresa", "logradouro", "numero", "bairro", "cep", "cidade")):
