@@ -43,7 +43,8 @@
 <footer class="page-footer home-footer" aria-label="Rodapé">
   <div class="home-footer-inner">
     <p>© {{ current_year if current_year is defined else 2026 }} AgendaSimples. Todos os direitos reservados.</p>
-    <p class="home-footer-legal"><span>Termos de Uso</span><span aria-hidden="true">·</span><span>Política de Privacidade</span></p>
+    <p class="home-footer-legal"><button type="button" class="home-footer-link" onclick="document.getElementById('footer-mvp-aviso').hidden=false">Termos de Uso</button><span aria-hidden="true">·</span><button type="button" class="home-footer-link" onclick="document.getElementById('footer-mvp-aviso').hidden=false">Política de Privacidade</button></p>
+    <p id="footer-mvp-aviso" class="mvp-notice" role="status" hidden>Esta funcionalidade faz parte do MVP e será implantada futuramente.</p>
   </div>
 </footer>
 {% endif %}
