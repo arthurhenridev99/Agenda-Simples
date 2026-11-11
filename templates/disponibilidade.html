@@ -3,8 +3,10 @@
 {% block content %}
 <section class="salon-hero">
   <div class="salon-logo"><img src="{{ url_for('static', filename='img/logo-agendasimples.webp') }}" alt="AgendaSimples — calendário e esmalte" width="1000" height="360" loading="eager" decoding="async"></div>
-  <h1>{{ estabelecimento[0] if estabelecimento else 'AgendaSimples' }}</h1>
-  <p>Suas unhas merecem esse cuidado</p>
+  {% if estabelecimento %}
+  <h1>{{ estabelecimento[0] }}</h1>
+  <p>{{ estabelecimento[3] }}</p>
+  {% endif %}
   {% if estabelecimento %}
   <div class="salon-details">
     <p><svg class="salon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> {{ estabelecimento[1] }}</p>
@@ -17,7 +19,7 @@
     </div>
     <p id="mvp-aviso" class="mvp-notice" role="status" hidden>Esta funcionalidade faz parte do MVP e será implantada futuramente.</p>
   </div>
-  {% else %}<p class="text-muted">Os dados do estabelecimento estarão disponíveis em breve.</p>{% endif %}
+  {% else %}<div class="salon-pending" role="status" style="max-width:560px;margin:26px auto 0;padding:22px 28px;border:1px solid #e8bfc9;border-radius:16px;background:rgba(255,255,255,.78);text-align:center;box-shadow:0 8px 28px rgba(122,15,46,.07)"><p style="font-size:1.1rem;font-weight:700;color:#7a0f2e;margin:0 0 8px">Estamos preparando este espaço com carinho!</p><p style="font-size:.96rem;margin:0;color:#86515e">Em breve, você poderá conhecer os detalhes do estabelecimento por aqui.</p></div>{% endif %}
 </section>
 <section class="booking-flow">
   <a class="booking-stage booking-stage-link" href="#lista-servicos"><span>1</span> Selecionar Serviço</a>
