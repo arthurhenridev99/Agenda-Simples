@@ -3,8 +3,8 @@
 {% block content %}
 <div class="page-heading"><div><p class="eyebrow">SEU DIA, ORGANIZADO</p><h1>Dashboard</h1><p class="text-muted">Bem-vinda, {{ nome }}. Vamos cuidar da sua agenda?</p></div><a class="btn btn-primary" href="{{ url_for('agenda_profissional', data=dia.isoformat()) }}">Ver agenda do dia ↗</a></div>
 {% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
-{% if not servicos_ativos or not periodos %}
-<section class="welcome-card"><span class="welcome-spark" aria-hidden="true">✦</span><div><h2>Vamos preparar sua agenda online</h2><p>Cadastre seus serviços e defina os períodos de atendimento para receber agendamentos.</p><div class="d-flex gap-2 flex-wrap"><a class="btn btn-primary" href="{{ url_for('listar_servicos') }}">{{ '✓' if servicos_ativos else '1.' }} Seus serviços</a><a class="btn btn-outline-primary" href="{{ url_for('listar_horarios') }}">{{ '✓' if periodos else '2.' }} Seus horários</a></div></div></section>
+{% if not servicos_ativos or not periodos or not estabelecimento_configurado %}
+<section class="welcome-card"><span class="welcome-spark" aria-hidden="true">✦</span><div><h2>Vamos preparar sua agenda online</h2><p>Cadastre seus serviços, defina seus horários e configure os dados do estabelecimento para receber agendamentos.</p><div class="d-flex gap-2 flex-wrap"><a class="btn btn-primary" href="{{ url_for('listar_servicos') }}">{{ '✓' if servicos_ativos else '1.' }} Seus serviços</a><a class="btn btn-outline-primary" href="{{ url_for('listar_horarios') }}">{{ '✓' if periodos else '2.' }} Seus horários</a><a class="btn btn-outline-primary" href="{{ url_for('configurar_estabelecimento') }}">{{ '✓' if estabelecimento_configurado else '3.' }} Seu estabelecimento</a></div></div></section>
 {% endif %}
 <section class="card updates"><div class="section-heading"><h2>Últimas novidades</h2><a href="{{ url_for('listar_notificacoes') }}">Ver notificações →</a></div>
 {% set eventos = {'novo_agendamento':'Novo agendamento', 'cancelamento':'Cancelamento', 'reagendamento':'Reagendamento', 'conclusao':'Atendimento concluído', 'falta':'Falta registrada'} %}
