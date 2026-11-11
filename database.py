@@ -19,6 +19,7 @@ def atualizar_cadastro_profissional(conexao):
         campos = {
             "whatsapp": "TEXT NOT NULL DEFAULT ''",
             "nome_empresa": "TEXT NOT NULL DEFAULT ''",
+            "frase_estabelecimento": "TEXT NOT NULL DEFAULT ''",
             "logradouro": "TEXT NOT NULL DEFAULT ''",
             "numero": "TEXT NOT NULL DEFAULT ''",
             "complemento": "TEXT NOT NULL DEFAULT ''",
