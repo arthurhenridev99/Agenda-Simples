@@ -84,7 +84,7 @@
                         <tbody>
                             {% for agendamento in agendamentos %}
                             <tr>
-                                <td>{{ agendamento[1] }}</td>
+                                <td>{{ agendamento[1][8:10] }}/{{ agendamento[1][5:7] }}/{{ agendamento[1][:4] }}</td>
                                 <td>{{ agendamento[2] }}</td>
                                 <td>{{ agendamento[3] }}</td>
                                 <td>{{ agendamento[4] }}</td>
