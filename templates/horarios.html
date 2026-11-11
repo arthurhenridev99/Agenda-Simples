@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Horários de Atendimento{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3"><h1 class="mb-0">Horários de Atendimento</h1>{% if configuracao_pendente %}<a class="btn btn-primary" href="{{ url_for('configurar_estabelecimento') }}" {% if not pode_avancar %}aria-disabled="true" tabindex="-1" style="pointer-events:none;opacity:.55"{% endif %}>Avançar para estabelecimento →</a>{% endif %}</div>
+<h1 class="mb-4">Horários de Atendimento</h1>
 {% if configuracao_pendente %}<p class="text-muted">Passo 2 de 3 · Defina pelo menos um período de atendimento para continuar.</p>{% endif %}
 
         <p class="text-muted">
@@ -127,7 +127,10 @@
             </div>
         </div>
 
-        <a href="/painel" class="btn btn-secondary mt-3">
-            Voltar ao painel
-        </a>
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+            <a href="{{ url_for('painel') }}" class="btn btn-secondary">Voltar ao painel</a>
+            {% if configuracao_pendente %}
+            <a class="btn btn-primary" href="{{ url_for('configurar_estabelecimento') }}" {% if not pode_avancar %}aria-disabled="true" tabindex="-1" style="pointer-events:none;opacity:.55"{% endif %}>Avançar para estabelecimento →</a>
+            {% endif %}
+        </div>
 {% endblock %}
