@@ -1403,3 +1403,30 @@ a:hover {color:#E91E63}
   .salon-details .salon-icon {width:15px;height:15px;flex-basis:15px}
   .salon-details .salon-social {gap:7px}
 }
+
+/* Links institucionais com aviso de MVP, sem navegação. */
+.page-inicio .home-footer-link {
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  padding:3px 2px;
+  cursor:pointer;
+  text-decoration:none;
+}
+.page-inicio .home-footer-link:hover,
+.page-inicio .home-footer-link:focus-visible {
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.page-inicio .home-footer-link:focus-visible {
+  outline:2px solid currentColor;
+  outline-offset:3px;
+  border-radius:2px;
+}
+.page-inicio #footer-mvp-aviso {
+  margin:6px auto 0;
+  text-align:center;
+}
+.page-inicio #footer-mvp-aviso[hidden] {display:none}
