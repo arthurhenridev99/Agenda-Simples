@@ -14,7 +14,8 @@
 </div>
 <a class="btn btn-primary" href="{{ url_for('listar_servicos') }}" style="max-width:100%;white-space:normal;text-align:center">Começar minha configuração →</a>
 </div></section>
-{% endif %}section class="card updates"><div class="section-heading"><h2>Últimas novidades</h2><a href="{{ url_for('listar_notificacoes') }}">Ver notificações →</a></div>
+{% endif %}
+<section class="card updates"><div class="section-heading"><h2>Últimas novidades</h2><a href="{{ url_for('listar_notificacoes') }}">Ver notificações →</a></div>
 {% set eventos = {'novo_agendamento':'Novo agendamento', 'cancelamento':'Cancelamento', 'reagendamento':'Reagendamento', 'conclusao':'Atendimento concluído', 'falta':'Falta registrada'} %}
 {% for aviso in avisos %}<div class="update-row"><span class="notification-dot" aria-hidden="true"></span><div><strong>{{ eventos.get(aviso[0], aviso[0]) }}</strong><p>{{ aviso[1] }} <span class="text-muted">· {{ aviso[2][8:10] }}/{{ aviso[2][5:7] }}/{{ aviso[2][:4] }} às {{ aviso[3] }}</span></p></div></div>{% else %}<p class="quiet-state">Tudo em dia. Nenhuma notificação pendente.</p>{% endfor %}</section>
 <form class="date-bar" method="GET"><a class="date-arrow" aria-label="Dia anterior" href="{{ url_for('painel', data=anterior or dia.isoformat()) }}">‹</a><div><label for="dia-dashboard">Agenda do dia</label><input id="dia-dashboard" type="date" name="data" value="{{ dia.isoformat() }}" required><button class="btn btn-sm btn-outline-primary" type="submit">Ver dia</button></div><a class="date-arrow" aria-label="Próximo dia" href="{{ url_for('painel', data=proximo or dia.isoformat()) }}">›</a></form>
