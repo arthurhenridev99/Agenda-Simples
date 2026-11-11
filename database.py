@@ -16,8 +16,19 @@ def atualizar_cadastro_profissional(conexao):
     conexao.execute("BEGIN IMMEDIATE")
     try:
         colunas = {linha[1] for linha in conexao.execute("PRAGMA table_info(profissional)")}
-        if "whatsapp" not in colunas:
-            conexao.execute("ALTER TABLE profissional ADD COLUMN whatsapp TEXT NOT NULL DEFAULT ''")
+        campos = {
+            "whatsapp": "TEXT NOT NULL DEFAULT ''",
+            "nome_empresa": "TEXT NOT NULL DEFAULT ''",
+            "logradouro": "TEXT NOT NULL DEFAULT ''",
+            "numero": "TEXT NOT NULL DEFAULT ''",
+            "complemento": "TEXT NOT NULL DEFAULT ''",
+            "bairro": "TEXT NOT NULL DEFAULT ''",
+            "cep": "TEXT NOT NULL DEFAULT ''",
+            "cidade": "TEXT NOT NULL DEFAULT ''",
+        }
+        for campo, definicao in campos.items():
+            if campo not in colunas:
+                conexao.execute(f"ALTER TABLE profissional ADD COLUMN {campo} {definicao}")
         conexao.commit()
     except Exception:
         conexao.rollback()
