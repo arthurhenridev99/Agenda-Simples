@@ -1274,3 +1274,66 @@ a:hover {color:#E91E63}
 .admin-layout .sidebar .logout {color:#65514C}
 .admin-layout .sidebar .logout:hover {color:#7A0F2E}
 .admin-layout .sidebar .mobile-menu summary {color:#65514C}
+
+/* Navegação administrativa móvel: drawer sobreposto à dashboard. */
+.mobile-nav-toggle,.mobile-nav-close,.mobile-nav-overlay {display:none}
+@media(max-width:760px) {
+  .admin-layout {overflow-x:hidden}
+  .admin-layout .mobile-nav-toggle {
+    display:grid;place-items:center;position:fixed;top:10px;left:12px;
+    width:42px;height:42px;z-index:1001;border:1px solid #E8CFC7;
+    border-radius:12px;background:#FFFDFC;color:#7A0F2E;
+    box-shadow:0 3px 14px #4A0D1F14;font-size:22px;cursor:pointer;
+  }
+  .admin-layout .mobile-nav-close {
+    display:grid;place-items:center;position:absolute;top:12px;right:12px;
+    width:36px;height:36px;border:0;border-radius:10px;
+    background:#FFFFFFB8;color:#7A0F2E;font-size:29px;cursor:pointer;
+  }
+  .admin-layout .mobile-nav-overlay {
+    display:block;position:fixed;inset:0;background:#230D17A3;
+    opacity:0;visibility:hidden;pointer-events:none;z-index:1100;
+    transition:opacity .25s ease,visibility .25s ease;
+  }
+  .admin-layout .sidebar {
+    position:fixed;inset:0 auto 0 0;width:min(310px,86vw);height:100dvh;
+    max-height:100dvh;z-index:1101;display:flex;flex-direction:column;
+    padding:24px 18px 18px;overflow-y:auto;overscroll-behavior:contain;
+    border-right:1px solid #DEC8BE;border-bottom:0;
+    transform:translateX(-105%);visibility:hidden;
+    transition:transform .25s ease,visibility .25s ease;
+    box-shadow:8px 0 30px #4A0D1F20;
+  }
+  .admin-layout.mobile-nav-open .sidebar {transform:translateX(0);visibility:visible}
+  .admin-layout.mobile-nav-open .mobile-nav-overlay {
+    opacity:1;visibility:visible;pointer-events:auto;
+  }
+  .admin-layout.mobile-nav-open {overflow:hidden}
+  .admin-layout .sidebar .brand {padding-right:38px;font-size:18px}
+  .admin-layout .sidebar .profile {margin:20px 0 18px}
+  .admin-layout .sidebar .mobile-menu {display:block;width:100%}
+  .admin-layout .sidebar .mobile-menu nav {display:grid;grid-template-columns:1fr;gap:5px}
+  .admin-layout .sidebar .mobile-menu nav a {
+    display:flex;align-items:center;gap:13px;width:100%;
+    padding:13px 14px;border-radius:12px;font-size:14px;
+  }
+  .admin-layout .sidebar .mobile-menu nav a>span {min-width:19px;text-align:center}
+  .admin-layout .sidebar-bottom {
+    margin-top:auto;display:flex;flex-direction:column;align-items:stretch;
+    gap:10px;padding-top:18px;
+  }
+  .admin-layout .sidebar-bottom .btn {width:100%;text-align:center}
+  .admin-layout .sidebar-bottom form {width:100%}
+  .admin-layout .sidebar-bottom .logout {width:100%;text-align:left;padding:12px}
+  .admin-layout .sidebar-bottom small {display:block;text-align:center}
+  .admin-layout .workspace {margin-left:0;width:100%;min-width:0}
+  .admin-layout .topbar {
+    min-height:62px;padding:13px 16px 13px 65px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .admin-layout .topbar .text-muted {display:none}
+  .admin-layout .page-content {padding:22px 16px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .admin-layout .sidebar,.admin-layout .mobile-nav-overlay {transition:none}
+}
