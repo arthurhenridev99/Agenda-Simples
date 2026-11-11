@@ -95,6 +95,11 @@ def inicializar_banco():
             )
         """)
 
+        # Bloqueios semanais: mantém bloqueios antigos por data sem perda de dados.
+        colunas_bloqueio = {linha[1] for linha in conexao.execute("PRAGMA table_info(bloqueio)")}
+        if "dia_semana" not in colunas_bloqueio:
+            conexao.execute("ALTER TABLE bloqueio ADD COLUMN dia_semana INTEGER CHECK (dia_semana BETWEEN 0 AND 6)")
+
         # Tabela 5 - Clientes
         conexao.execute("""
             CREATE TABLE IF NOT EXISTS cliente (
@@ -175,3 +180,11 @@ def concluir_agendamentos_vencidos(agora=None):
             (instante.strftime("%Y-%m-%d %H:%M:%S"),),
         )
         return cursor.rowcount
+
+
+def atualizar_bloqueios_semanais(conexao):
+    """Adiciona dia da semana ao banco existente, preservando bloqueios por data."""
+    colunas = {linha[1] for linha in conexao.execute("PRAGMA table_info(bloqueio)")}
+    if "dia_semana" not in colunas:
+        conexao.execute("ALTER TABLE bloqueio ADD COLUMN dia_semana INTEGER CHECK (dia_semana BETWEEN 0 AND 6)")
+        conexao.commit()
