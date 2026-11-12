@@ -1,8 +1,12 @@
+import os
 import sqlite3
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-DATABASE = BASE_DIR / "agendamento.db"
+# Em produção, configure DATABASE_PATH para um volume persistente.
+# Sem a variável, o banco local continua no mesmo caminho de sempre.
+DATABASE = Path(os.environ.get("DATABASE_PATH") or (BASE_DIR / "agendamento.db")).expanduser()
+
 
 
 def conectar():
