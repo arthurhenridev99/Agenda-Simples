@@ -1448,6 +1448,10 @@ def reagendar():
                 duracao_override=agendamento[5],
             )
 
+            # A reserva atual não é uma opção de reagendamento.
+            if data_nova == agendamento[2]:
+                horarios = [hora for hora in horarios if hora != agendamento[3]]
+
     return render_template(
         "reagendar.html",
         agendamento=agendamento,
