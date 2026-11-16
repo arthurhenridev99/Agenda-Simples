@@ -95,58 +95,30 @@
                                 </td>
                                 <td>
                                     {% if agendamento[8] == "agendado" %}
-                                    <span class="badge bg-primary">
-                                        Agendado
-                                    </span>
+                                    <span class="badge bg-primary">Agendado</span>
                                     {% elif agendamento[8] == "cancelado" %}
-                                    <span class="badge bg-secondary">
-                                        Cancelado
-                                    </span>
+                                    <span class="badge bg-secondary">Cancelado</span>
                                     {% elif agendamento[8] == "concluido" %}
-                                    <span class="badge bg-success">
-                                        Concluído
-                                    </span>
+                                    <span class="badge bg-success">Concluído</span>
                                     {% else %}
-                                    <span class="badge bg-warning text-dark">
-                                        Falta
-                                    </span>
+                                    <span class="badge bg-warning text-dark">Falta</span>
+                                    {% endif %}
+                                    {% if agendamento[8] == "agendado" %}
+                                    <form method="POST" class="mt-2"
+                                        action="{{ url_for('alterar_situacao_agendamento', id_agendamento=agendamento[0]) }}"
+                                        onsubmit="return confirm('Confirmar a situação deste atendimento?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <label class="visually-hidden" for="situacao-{{ agendamento[0] }}">Atualizar situação</label>
+                                        <select class="form-select form-select-sm" id="situacao-{{ agendamento[0] }}" name="situacao" required>
+                                            <option value="" selected disabled>Alterar situação</option>
+                                            <option value="concluido">Concluído</option>
+                                            <option value="falta">Falta</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-outline-primary mt-1" type="submit">Salvar</button>
+                                    </form>
                                     {% endif %}
                                 </td>
-
-                                <td>
-                                    {% if agendamento[0] in finalizaveis %}
-                                    <div class="d-flex gap-2">
-
-                                        <form method="POST"
-                                            action="{{ url_for('alterar_situacao_agendamento', id_agendamento=agendamento[0]) }}">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <input type="hidden" name="situacao" value="concluido">
-
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                Concluir
-                                            </button>
-                                        </form>
-
-                                        <form method="POST"
-                                            action="{{ url_for('alterar_situacao_agendamento', id_agendamento=agendamento[0]) }}"
-                                            onsubmit="return confirm('Confirmar falta da cliente?');">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <input type="hidden" name="situacao" value="falta">
-
-                                            <button type="submit" class="btn btn-sm btn-warning">
-                                                Registrar Falta
-                                            </button>
-                                        </form>
-
-                                    </div>
-                                    {% elif agendamento[8] == "agendado" %}
-                                    <span class="text-muted small">
-                                        Aguardando atendimento
-                                    </span>
-                                    {% else %}
-                                    <span class="text-muted">—</span>
-                                    {% endif %}
-                                </td>
+                                <td><span class="text-muted">—</span></td>
 
                             </tr>
                             {% endfor %}
