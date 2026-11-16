@@ -5,7 +5,7 @@ from functools import wraps
 from notificacoes import registrar_notificacao
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import conectar, concluir_agendamentos_vencidos
+from database import conectar
 
 app = Flask(__name__)
 
@@ -22,14 +22,6 @@ def login_obrigatorio(funcao):
         return funcao(*args, **kwargs)
 
     return verificar_login
-
-
-@app.before_request
-def sincronizar_conclusoes():
-    # Antes das consultas e alterações, persiste os status atualizados no SQLite.
-    # Ignora arquivos estáticos, sem comprometer o carregamento do visual.
-    if request.endpoint != "static":
-        concluir_agendamentos_vencidos()
 
 
 @app.route("/")
@@ -1531,31 +1523,11 @@ def agenda_profissional():
         finally:
             conexao.close()
 
-    from datetime import datetime, timedelta
-
     token = session.get("csrf_agenda")
 
     if not token:
         token = secrets.token_urlsafe(32)
         session["csrf_agenda"] = token
-
-    agora = datetime.now()
-
-    finalizaveis = set()
-
-    for atendimento in agendamentos:
-        if atendimento[8] != "agendado":
-            continue
-
-        inicio = datetime.strptime(
-            f"{atendimento[1]} {atendimento[2]}",
-            "%Y-%m-%d %H:%M",
-        )
-
-        fim = inicio + timedelta(minutes=atendimento[6])
-
-        if agora >= fim:
-            finalizaveis.add(atendimento[0])
 
     return render_template(
         "agenda.html",
@@ -1564,7 +1536,6 @@ def agenda_profissional():
         status_filtro=status_filtro,
         erro=erro,
         csrf_token=token,
-        finalizaveis=finalizaveis,
     )
 
 
@@ -1572,7 +1543,7 @@ def agenda_profissional():
 @app.route("/agenda/<int:id_agendamento>/situacao", methods=["POST"])
 @login_obrigatorio
 def alterar_situacao_agendamento(id_agendamento):
-    from datetime import datetime, timedelta
+    from datetime import datetime
     from flask import flash
 
     token_esperado = session.get("csrf_agenda", "")
@@ -1615,11 +1586,9 @@ def alterar_situacao_agendamento(id_agendamento):
                 "%Y-%m-%d %H:%M",
             )
 
-            fim = inicio + timedelta(minutes=agendamento[2])
-
-            if datetime.now() < fim:
+            if datetime.now() < inicio:
                 flash(
-                    "Aguarde o término previsto do atendimento.",
+                    "A situação só pode ser registrada a partir do início do atendimento.",
                     "warning",
                 )
 
