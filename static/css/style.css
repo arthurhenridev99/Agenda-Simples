@@ -1,0 +1,1448 @@
+/* Identidade compartilhada por todas as páginas, sem dependências externas. */
+:root {
+  --purple:#A18A83;
+  --taupe:#A18A83;
+  --rose:#E8D5CE;
+  --gold:#C5A36B;
+  --brown:#65514C;
+  --purple-dark:#65514C;
+  --lilac:#E8D5CE;
+  --ink:#3F302C;
+  --muted:#75615B;
+  --line:#E6DAD4;
+  --surface:#fff;
+  --bg:#F7F1ED;
+  --radius:16px;
+  --shadow:0 4px 20px #38205606}
+
+* {
+  box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+a {
+  color:var(--purple-dark);
+  text-decoration:none}
+a:hover {
+  text-decoration:underline}
+button,input,select {
+  font:inherit}
+button,a,input,select {
+  touch-action:manipulation}
+button {
+  cursor:pointer}
+h1,h2,h3,h4,p {
+  margin:0 0 14px}
+h1 {
+  font-size:30px;
+  line-height:1.25;
+  letter-spacing:-.8px}
+h2,h4 {
+  font-size:18px;
+  line-height:1.4}
+h3 {
+  font-size:17px}
+strong {
+  font-weight:650}
+small,.small {
+  font-size:12px}
+hr {
+  border:0;
+  border-top:1px solid var(--line);
+  margin:24px 0}
+:focus-visible {
+  outline:3px solid #C5A36B;
+  outline-offset:4px}
+.skip-link {
+  position:absolute;
+  left:16px;
+  top:-70px;
+  background:white;
+  padding:12px;
+  z-index:10}
+.skip-link:focus {
+  top:12px}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--purple-dark);
+  font-weight:800;
+  font-size:19px;
+  letter-spacing:-.6px}
+.brand>span:not(.brand-icon) {
+  font-weight:500;
+  font-size:13px;
+  letter-spacing:0}
+.brand-icon {
+  font-size:28px;
+  color:var(--purple)}
+.sidebar {
+  position:fixed;
+  inset:0 auto 0 0;
+  width:244px;
+  background:white;
+  border-right:1px solid var(--line);
+  padding:26px 18px;
+  display:flex;
+  flex-direction:column;
+  overflow:auto}
+.profile {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:30px 4px 24px;
+  padding-bottom:24px;
+  border-bottom:1px solid var(--line)}
+.profile small,.profile strong {
+  display:block}
+.profile strong {
+  max-width:155px;
+  overflow-wrap:anywhere}
+.profile small {
+  color:var(--muted)}
+.avatar {
+  display:inline-grid;
+  place-items:center;
+  flex-shrink:0;
+  width:39px;
+  height:39px;
+  border-radius:50%;
+  color:var(--purple);
+  background:var(--lilac);
+  font-weight:650}
+.sidebar nav {
+  display:grid;
+  gap:7px}
+.sidebar nav a {
+  display:flex;
+  gap:13px;
+  align-items:center;
+  padding:11px 13px;
+  color:#65514C;
+  border-radius:10px;
+  font-weight:550}
+.sidebar nav a>span {
+  width:19px;
+  font-size:19px;
+  text-align:center}
+.sidebar nav a:hover {
+  background:var(--lilac);
+  text-decoration:none}
+.sidebar nav a.active {
+  color:white;
+  background:linear-gradient(100deg,#A18A83,#8E746D);
+  box-shadow:0 4px 10px #A18A8330}
+.mobile-menu summary {
+  display:none}
+.sidebar-bottom {
+  margin-top:auto;
+  padding-top:32px}
+.sidebar-bottom .btn {
+  width:100%;
+  font-size:12px}
+.sidebar-bottom small {
+  display:block;
+  color:var(--muted);
+  margin-top:16px;
+  text-align:center}
+.logout {
+  border:0;
+  background:none;
+  color:#9A4E59;
+  padding:15px 12px}
+.admin-layout .workspace {
+  margin-left:244px}
+.topbar {
+  min-height:72px;
+  background:white;
+  border-bottom:1px solid var(--line);
+  padding:20px 36px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12px}
+.page-content {
+  max-width:1280px;
+  margin:auto;
+  padding:36px;
+  min-height:75vh;
+  outline:none}
+.page-footer {
+  padding:24px;
+  text-align:center;
+  font-size:11px;
+  color:var(--muted)}
+.page-footer span {
+  padding:0 8px}
+.page-heading,.section-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  margin-bottom:24px}
+.page-heading p {
+  margin:0}
+.eyebrow {
+  color:var(--purple-dark);
+  font-size:10px;
+  font-weight:750;
+  letter-spacing:2px;
+  margin-bottom:8px!important}
+.page-heading h1 {
+  margin-bottom:8px}
+.section-heading {
+  margin-bottom:16px}
+.section-heading h2,.section-heading p {
+  margin-bottom:0}
+.section-heading a {
+  font-size:12px;
+  white-space:nowrap}
+.card {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden}
+.card-body {
+  padding:25px}
+.btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:44px;
+  padding:10px 18px;
+  border:1px solid transparent;
+  border-radius:9px;
+  font-size:13px;
+  line-height:1.5;
+  font-weight:600;
+  text-align:center;
+  vertical-align:middle;
+  transition:background .15s,box-shadow .15s}
+.btn:hover {
+  text-decoration:none;
+  box-shadow:0 3px 12px #65514C18}
+.btn-primary {
+  background:linear-gradient(105deg,#A18A83,#8C7069);
+  color:white}
+.btn-primary:hover {
+  background:var(--purple-dark)}
+.btn-outline-primary {
+  background:white;
+  color:var(--purple-dark);
+  border-color:#D8C4BC}
+.btn-secondary,.btn-outline-secondary {
+  background:#F3E8E3;
+  color:#65514C;
+  border-color:var(--line)}
+.btn-success,.btn-outline-success {
+  background:#e7f6ef;
+  color:#24684f;
+  border-color:#c1e5d4}
+.btn-warning {
+  background:#fff1d8;
+  color:#805415}
+.btn-outline-danger {
+  background:#fff7fa;
+  color:#a13957;
+  border-color:#efced8}
+.btn-sm {
+  font-size:12px;
+  padding:7px 12px;
+  min-height:40px}
+.form-label,label {
+  display:block;
+  font-weight:600;
+  margin-bottom:7px;
+  font-size:13px}
+.form-control,.form-select {
+  display:block;
+  width:100%;
+  min-height:46px;
+  padding:10px 13px;
+  color:var(--ink);
+  background:#FFFCFA;
+  border:1px solid #DAC9C1;
+  border-radius:8px}
+.form-control:focus,.form-select:focus {
+  border-color:var(--purple);
+  outline:3px solid #E8D5CE}
+.form-control::placeholder {
+  color:#82716B}
+.alert {
+  padding:14px 17px;
+  border:1px solid #E1CEC6;
+  border-radius:10px;
+  margin-bottom:20px;
+  background:#F3E7E1;
+  color:#65514C}
+.alert-danger {
+  background:#fff0f4;
+  color:#992e4a;
+  border-color:#f1cad5}
+.alert-success {
+  background:#eaf7f1;
+  color:#246349;
+  border-color:#c5e6d6}
+.alert-warning {
+  background:#fff7e7;
+  color:#79551a;
+  border-color:#ebdbb8}
+.table-responsive {
+  overflow-x:auto;
+  max-width:100%;
+  border:1px solid var(--line);
+  border-radius:10px}
+.table {
+  border-collapse:collapse;
+  width:100%;
+  font-size:13px;
+  text-align:left}
+.table th {
+  background:#F3EAE6;
+  color:#75615B;
+  font-size:11px;
+  font-weight:650;
+  padding:13px 16px;
+  white-space:nowrap}
+.table td {
+  border-top:1px solid var(--line);
+  padding:16px;
+  vertical-align:middle}
+.table td .d-flex {
+  flex-wrap:wrap}
+.table-hover tr:hover td {
+  background:#FFFCFA}
+.badge,.status {
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:20px;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:600}
+.bg-primary,.status-agendado {
+  background:#E8D5CE;
+  color:#65514C}
+.bg-success,.status-concluido {
+  background:#e4f5ec;
+  color:#247354}
+.bg-secondary,.status-cancelado {
+  background:#F3E3DE;
+  color:#9A4E59}
+.bg-warning,.status-falta {
+  background:#fff1d8;
+  color:#845911}
+.updates,.daily {
+  padding:24px;
+  margin-bottom:24px}
+.update-row {
+  border-left:3px solid #C5A36B;
+  border-radius:8px;
+  background:#FCF8F5;
+  padding:11px 16px;
+  margin-top:9px;
+  display:flex;
+  gap:12px;
+  align-items:center}
+.update-row p {
+  margin:0;
+  font-size:12px}
+.notification-dot {
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#C5A36B;
+  flex-shrink:0}
+.quiet-state {
+  margin:0;
+  color:var(--muted);
+  padding:12px 0}
+.date-bar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:white;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px 16px;
+  margin-bottom:18px}
+.date-bar>div {
+  display:flex;
+  align-items:center;
+  gap:14px}
+.date-bar label {
+  margin:0;
+  font-size:12px;
+  color:var(--muted)}
+.date-bar input {
+  border:0;
+  background:transparent;
+  max-width:160px;
+  color:var(--ink);
+  padding:8px}
+.date-arrow {
+  font-size:26px;
+  width:38px;
+  text-align:center}
+.stats {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-bottom:24px}
+.stat-card {
+  background:white;
+  border:1px solid var(--line);
+  border-radius:12px;
+  text-align:center;
+  padding:20px 12px;
+  display:grid;
+  justify-items:center}
+.stat-card strong {
+  font-size:26px;
+  line-height:1.4}
+.stat-card>span:last-child {
+  color:var(--muted);
+  font-size:12px}
+.stat-icon {
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  font-size:20px;
+  margin-bottom:10px}
+.purple {
+  background:#E8D5CE;
+  color:#8E746D}
+.green {
+  background:#e4f8ee;
+  color:#33866c}
+.rose {
+  background:#ffedf3;
+  color:#bf607e}
+.amber {
+  background:#fff2da;
+  color:#a27628}
+.appointment {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:17px 12px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  margin-top:10px;
+  background:#FFFCFA}
+.appointment-client {
+  flex:1;
+  min-width:0}
+.appointment-client strong,.appointment-client span {
+  display:block;
+  overflow-wrap:anywhere}
+.appointment-client span {
+  font-size:12px;
+  color:var(--muted)}
+.appointment-time {
+  font-size:14px;
+  margin-right:14px}
+.empty-state {
+  padding:28px 16px;
+  text-align:center;
+  color:var(--muted)}
+.empty-state>span {
+  font-size:32px;
+  color:#C5A36B}
+.empty-state h3 {
+  color:var(--ink);
+  margin:12px 0 6px}
+.welcome-card {
+  display:flex;
+  gap:24px;
+  padding:28px;
+  border:1px solid #E1CEC6;
+  background:linear-gradient(120deg,#E8D5CE,#fff);
+  border-radius:16px;
+  margin-bottom:24px}
+.welcome-spark {
+  font-size:54px;
+  color:#C5A36B}
+.welcome-card p {
+  color:var(--muted)}
+.public-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:24px;
+  padding:20px 5%;
+  background:white;
+  border-bottom:1px solid var(--line)}
+.public-header nav {
+  display:flex;
+  align-items:center;
+  gap:26px;
+  font-size:13px}
+.public-layout .page-content {
+  max-width:840px}
+.public-layout.page-inicio .page-content {
+  max-width:1120px}
+.public-hero {
+  text-align:center;
+  padding:36px 0 50px}
+.hero-spark {
+  font-size:64px;
+  color:#C5A36B}
+.public-hero h1 {
+  font-size:48px;
+  letter-spacing:-1.8px;
+  line-height:1.14;
+  margin:16px 0 22px}
+.public-hero>p:not(.eyebrow) {
+  color:var(--muted);
+  font-size:16px;
+  margin-bottom:28px}
+.public-hero .btn {
+  margin:4px}
+.steps {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px}
+.steps .card {
+  padding:26px}
+.steps h2 {
+  font-size:16px;
+  margin-top:14px}
+.steps p {
+  color:var(--muted);
+  font-size:13px;
+  margin:0}
+.step-number {
+  color:#C5A36B;
+  font-size:20px}
+.page-login .page-content,.page-cadastro .page-content {
+  max-width:520px;
+  padding-top:64px}
+.page-login .col-md-6,.page-cadastro .col-md-6 {
+  width:100%}
+.page-login h1,.page-cadastro h1 {
+  font-size:24px}
+.page-login .card,.page-cadastro .card {
+  box-shadow:0 14px 32px #65514C12}
+.page-login .card-body,.page-cadastro .card-body {
+  padding:32px}
+.page-consultar_agendamento .card>form,.page-consultar_agendamento .card>p {
+  margin:0 25px 20px}
+.text-muted,.text-secondary {
+  color:var(--muted)}
+.text-success {
+  color:#287052}
+.text-center {
+  text-align:center}
+.d-flex {
+  display:flex}
+.d-block {
+  display:block}
+.flex-wrap {
+  flex-wrap:wrap}
+.gap-2 {
+  gap:8px}
+.align-items-end {
+  align-items:flex-end}
+.justify-content-center {
+  justify-content:center}
+.row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:18px}
+.row>[class*=col-] {
+  min-width:0;
+  flex:1}
+.row>.col-md-2 {
+  flex:.45}
+.row>.col-md-7 {
+  flex:0 1 680px}
+.w-100 {
+  width:100%}
+.mb-0 {
+  margin-bottom:0}
+.mb-1 {
+  margin-bottom:4px}
+.mb-2 {
+  margin-bottom:8px}
+.mb-3 {
+  margin-bottom:18px}
+.mb-4 {
+  margin-bottom:26px}
+.mt-3 {
+  margin-top:18px}
+.p-4 {
+  padding:26px}
+.lead {
+  font-size:18px}
+
+@media(min-width:761px) {
+  .mobile-menu:not([open]) nav {
+  display:grid}
+}
+
+@media(max-width:1000px) {
+  .sidebar {
+  width:215px;
+  padding:22px 14px}
+.admin-layout .workspace {
+  margin-left:215px}
+.brand {
+  font-size:17px;
+  gap:6px}
+.brand>span:not(.brand-icon) {
+  font-size:11px}
+.page-content {
+  padding:25px}
+.topbar {
+  padding:20px 25px}
+.page-heading {
+  align-items:flex-start}
+.stats {
+  gap:10px}
+.date-bar>div {
+  gap:6px}
+.appointment {
+  flex-wrap:wrap}
+}
+
+@media(max-width:760px) {
+  .sidebar {
+  position:static;
+  width:auto;
+  padding:16px;
+  border-right:0;
+  border-bottom:1px solid var(--line)}
+.sidebar .brand {
+  font-size:19px}
+.profile {
+  margin:14px 0;
+  padding-bottom:12px}
+.profile strong {
+  max-width:none}
+.mobile-menu summary {
+  display:block;
+  cursor:pointer;
+  padding:10px 8px;
+  font-weight:600;
+  color:var(--purple-dark)}
+.mobile-menu summary:after {
+  content:' ↕'}
+.sidebar nav {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px}
+.sidebar nav a {
+  font-size:12px;
+  padding:9px}
+.sidebar-bottom {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding-top:12px}
+.sidebar-bottom .btn {
+  width:auto}
+.sidebar-bottom small {
+  display:none}
+.admin-layout .workspace {
+  margin-left:0}
+.topbar {
+  padding:14px 18px;
+  min-height:52px;
+  gap:12px}
+.topbar .text-muted {
+  display:none}
+.page-content {
+  padding:24px 16px}
+.page-heading {
+  display:block}
+.page-heading>.btn {
+  margin-top:16px}
+h1 {
+  font-size:26px}
+.stats {
+  grid-template-columns:repeat(2,1fr);
+  gap:10px}
+.stat-card {
+  padding:16px}
+.updates,.daily {
+  padding:18px}
+.section-heading {
+  gap:10px;
+  align-items:flex-start}
+.section-heading h2 {
+  font-size:16px}
+.section-heading a {
+  white-space:normal;
+  text-align:right}
+.date-bar {
+  padding:9px 6px}
+.date-bar label {
+  display:none}
+.date-bar input {
+  max-width:145px}
+.date-bar .btn {
+  padding:7px}
+.appointment {
+  gap:10px}
+.appointment-client {
+  flex-basis:calc(100% - 60px)}
+.appointment-time {
+  margin-left:49px}
+.welcome-card {
+  padding:20px;
+  gap:12px}
+.welcome-spark {
+  font-size:30px}
+.public-header {
+  padding:15px 16px;
+  display:block}
+.public-header nav {
+  margin-top:12px;
+  gap:16px;
+  flex-wrap:wrap;
+  font-size:12px}
+.public-header .btn {
+  padding:8px 12px}
+.public-hero {
+  padding-top:10px}
+.public-hero h1 {
+  font-size:37px}
+.public-hero>p:not(.eyebrow) {
+  font-size:14px}
+.steps {
+  grid-template-columns:1fr}
+.steps .card {
+  padding:22px}
+.row {
+  display:block}
+.row>[class*=col-] {
+  margin-bottom:16px}
+.card-body,.p-4 {
+  padding:20px}
+.page-login .page-content,.page-cadastro .page-content {
+  padding-top:30px}
+.page-login .card-body,.page-cadastro .card-body {
+  padding:24px}
+.table td {
+  padding:12px}
+.table {
+  min-width:620px}
+.btn {
+  max-width:100%}
+.public-hero .btn {
+  display:flex}
+.alert h3 {
+  overflow-wrap:anywhere}
+}
+
+@media(prefers-reduced-motion:reduce) {
+  * {
+  transition:none!important}
+}
+
+
+/* Cadastro e recuperação de acesso — AgendaSimples. */
+.auth-intro { text-align: center; margin-bottom: 28px; }
+.auth-intro h1 { color: var(--purple); font-size: 30px; line-height: 1.2; }
+.auth-card .card-body { padding: 30px; }
+.page-esqueci_minha_senha .page-content,
+.page-redefinir_senha .page-content { max-width: 520px; padding-top: 64px; }
+.password-field { position: relative; }
+.password-field input { padding-right: 84px; }
+.password-toggle { position: absolute; right: 4px; top: 3px; min-height: 40px; padding: 6px 10px; border: 0; background: transparent; color: var(--purple-dark); font-size: 12px; border-radius: 6px; }
+.password-toggle[hidden] { display: none; }
+@media (max-width: 760px) {
+  .page-esqueci_minha_senha .page-content,
+  .page-redefinir_senha .page-content { padding-top: 30px; }
+  .auth-card .card-body { padding: 24px; }
+}
+
+
+/* Jornada pública de agendamento: mantém a paleta e componentes atuais. */
+.page-consultar_disponibilidade .page-content {max-width:100%;padding:0 0 42px}
+.salon-hero {background:linear-gradient(120deg,#B59C92,#92766E);color:white;text-align:center;padding:38px 16px 44px}
+.salon-logo {width:90px;height:90px;margin:0 auto 20px;background:#fff;color:var(--purple);border-radius:18px;display:grid;place-items:center;font-size:46px}
+.salon-hero h1 {font-size:32px;margin-bottom:8px}
+.salon-hero>p {color:#FFF7F2;font-size:17px}
+.salon-details {max-width:410px;margin:24px auto 0;border:1px solid #ffffff44;border-radius:18px;padding:24px;background:#ffffff12}
+.salon-details>p {margin:0 0 14px}
+.salon-socials {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;border-top:1px solid #ffffff44;padding-top:18px}
+.salon-social {background:#ffffff22;border:0;color:white;border-radius:10px;padding:11px}
+.salon-social:hover {background:#ffffff33}
+.mvp-notice {padding:12px;margin-top:14px!important;background:#ffffff22;border-radius:10px}
+.booking-flow {max-width:610px;margin:30px auto;text-align:center;padding:0 16px}
+.booking-flow>h1,.booking-flow>h2,.booking-date-section>h2 {margin:24px 0 10px}
+.booking-stage {display:inline-flex;align-items:center;gap:14px;padding:14px 22px;background:white;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);font-size:17px;font-weight:650}
+.booking-stage>span {display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(120deg,#A18A83,#8C7069);color:white}
+.booking-progress {display:flex;justify-content:space-around;position:relative;margin:30px auto 46px;max-width:430px}
+.booking-progress:before {content:'';height:3px;background:#E8D5CE;position:absolute;left:14%;right:14%;top:16px}
+.booking-progress>span {position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#EDE3DE;color:#777;font-weight:700}
+.booking-progress>span.current {background:#A18A83;color:white}
+.booking-progress>span.done {background:#20b884;color:white}
+.booking-progress small {position:absolute;top:40px;color:var(--muted);font-weight:500}
+.service-list {display:grid;gap:14px;margin-top:28px;text-align:left}
+.service-choice {padding:22px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.service-choice h3 {margin:0 0 6px}
+.service-choice p {margin:0}
+.service-action {display:grid;justify-items:end;gap:10px;white-space:nowrap}
+.service-action strong {color:var(--purple);font-size:18px}
+.booking-date-section {margin-top:46px;scroll-margin-top:24px}
+.booking-date-section .booking-stage {margin-bottom:20px}
+.booking-summary {background:#F3E7E1;border:1px solid #E5D1C9;border-radius:14px;padding:20px;margin:20px auto 30px;color:#65514C}
+.booking-summary p {margin:5px 0}
+.calendar-card,.time-card {max-width:450px;margin:22px auto;padding:24px}
+.calendar-heading {display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.calendar-heading h3 {margin:0}
+.calendar-heading button {background:transparent;border:0;font-size:28px;color:var(--ink);padding:0 10px}
+.calendar-heading button:disabled {opacity:.25;cursor:not-allowed}
+.calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.calendar-weekday {font-size:11px;color:var(--muted);padding:10px 0}
+.calendar-day {border:0;border-radius:9px;background:transparent;min-height:40px;color:var(--ink)}
+.calendar-day:hover:not(:disabled) {background:#F1E3DC}
+.calendar-day.selected {background:var(--purple);color:white}
+.calendar-day:disabled {color:#B9A9A1;cursor:not-allowed}
+.time-card {text-align:left}
+.time-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.time-slot {display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fbfaff;color:var(--ink);font-weight:600}
+.time-slot:hover {background:var(--purple);color:white;text-decoration:none}
+.confirmation-flow .booking-review {text-align:left;margin:28px 0}
+.booking-review h2 {color:var(--purple);margin-bottom:16px}
+.booking-review>div {display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #E2D4CD}
+.booking-review>div:last-child {border:0}
+.booking-review>div strong {text-align:right;color:var(--ink)}
+.booking-review .booking-total strong {color:var(--purple);font-size:20px}
+.booking-customer-form {text-align:left}
+.booking-customer-form small {display:block;margin-top:6px}
+.booking-confirmed {max-width:610px;margin:0 auto;text-align:center;padding:32px 16px}
+.page-agendamento_confirmado .page-content {background:#F7F1ED;max-width:none}
+.confirmed-check {display:grid;place-items:center;margin:0 auto 20px;width:90px;height:90px;border-radius:50%;background:#24b883;color:white;font-size:48px}
+.confirmed-details {padding:28px;text-align:left;margin:28px 0}
+.confirmed-details>div:not(.confirmed-code) {display:flex;gap:16px;align-items:flex-start;margin-bottom:18px}
+.confirmed-details p {margin:0}
+.confirmed-details p strong,.confirmed-details p span {display:block}
+.confirmed-details p span {color:var(--muted)}
+.confirmed-details .confirmed-price {color:#169769;font-size:19px;font-weight:750}
+.confirmed-icon {display:grid;place-items:center;flex:0 0 42px;height:42px;background:#F3E7E1;color:var(--purple);border-radius:12px;font-size:22px}
+.confirmed-code {background:#F3E7E1;border-radius:12px;padding:16px;text-align:center}
+.confirmed-code span {font-size:22px;font-weight:750;letter-spacing:1px;overflow-wrap:anywhere}
+.confirmed-code small {display:block;color:var(--muted)}
+.confirmed-actions {display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.confirmed-actions .new-booking {grid-column:1/-1}
+@media(max-width:600px) {.salon-hero h1{font-size:27px}.service-choice{padding:16px}.service-action strong{font-size:15px}.calendar-card,.time-card{padding:15px}.calendar-grid{gap:2px}.calendar-day{min-height:36px}.confirmed-details{padding:18px}}
+
+/* Rolagem suave no atalho de seleção de serviço. */
+html {scroll-behavior:smooth}
+.booking-stage-link {color:var(--ink);text-decoration:none;cursor:pointer}
+.booking-stage-link:hover {color:var(--purple);text-decoration:none}
+#lista-servicos {scroll-margin-top:24px}
+@media (prefers-reduced-motion:reduce) {html {scroll-behavior:auto}}
+
+/* Mantém o cabeçalho e os primeiros horários visíveis ao escolher uma data. */
+.page-consultar_disponibilidade .time-card {scroll-margin-top:24px;scroll-margin-bottom:24px}
+
+/* Seleção explícita do horário antes de avançar para confirmação. */
+.time-slot {font:inherit;cursor:pointer;width:100%;text-align:center}
+.time-slot.selected,.time-slot[aria-pressed="true"] {background:linear-gradient(110deg,#B29A90,#92766E);color:#fff;border-color:#92766E;box-shadow:0 3px 8px #65514C33}
+.continue-time {margin-top:22px}
+.continue-time:disabled {opacity:.6;cursor:not-allowed}
+
+/* Identidade Unhas da Poliana — acabamento acolhedor e consistente. */
+body {background:#F7F1ED;color:#3F302C}
+h1,h2,h3,h4 {color:#65514C}
+.card,.stat-card,.salon-details,.booking-stage,.calendar-card,.time-card {border-color:#E8D5CE}
+.card,.stat-card {box-shadow:0 8px 28px #65514C0B}
+.btn-primary {background:#A18A83;border-color:#A18A83;color:#fff}
+.btn-primary:hover,.btn-primary:focus-visible {background:#65514C;border-color:#65514C;color:#fff}
+.btn-outline-primary {background:#fff;border-color:#A18A83;color:#65514C}
+.btn-outline-primary:hover {background:#F3E7E1;color:#65514C}
+.sidebar nav a.active {background:#A18A83;box-shadow:0 4px 12px #65514C24}
+.sidebar nav a:hover {background:#F3E7E1}
+.form-control,.form-select {background:#fff;border-color:#DCCBC3}
+.form-control:focus,.form-select:focus {border-color:#A18A83;outline:3px solid #E8D5CE}
+.public-hero {background:radial-gradient(ellipse at top,#E8D5CE88,transparent 65%);border-radius:26px}
+.hero-spark,.step-number,.welcome-spark {color:#C5A36B}
+.salon-hero {background:linear-gradient(135deg,#B49C92 0%,#A18A83 50%,#81665F 100%);color:#fff}
+.salon-hero h1 {color:#fff}
+.salon-hero>p {color:#FFF7F2}
+.salon-logo {color:#C5A36B;background:#fff}
+.salon-details {border-color:#FFFFFF66;background:#FFFFFF16;box-shadow:0 12px 30px #65514C12}
+.salon-social {background:#FFFFFF24}
+.salon-social:hover {background:#FFFFFF36}
+.booking-stage>span,.booking-progress>span.current {background:#A18A83;color:#fff}
+.booking-progress>span.done {background:#7B8D74;color:#fff}
+.booking-summary,.confirmed-code {background:#F3E7E1;border-color:#E8D5CE;color:#65514C}
+.service-action strong,.booking-review h2,.booking-review .booking-total strong {color:#65514C}
+.calendar-day:hover:not(:disabled) {background:#E8D5CE}
+.calendar-day.selected {background:#A18A83;color:#fff}
+.time-slot {background:#fff;border-color:#E8D5CE;color:#65514C}
+.time-slot:hover,.time-slot.selected,.time-slot[aria-pressed="true"] {background:#A18A83;border-color:#A18A83;color:#fff;box-shadow:0 3px 10px #65514C24}
+.page-agendamento_confirmado .page-content {background:#F7F1ED}
+.confirmed-check {background:#7B8D74}
+.confirmed-icon {background:#F3E7E1;color:#A18A83}
+.confirmed-details .confirmed-price {color:#65514C}
+.confirmed-code span {color:#65514C}
+.booking-progress:before {background:#E8D5CE}
+:focus-visible {outline-color:#C5A36B}
+@media(prefers-reduced-motion:reduce) {* {scroll-behavior:auto!important;animation:none!important}}
+
+/* Variação cromática equilibrada — cartões, telas e navegação. */
+:root {--bg:#FAF7F4;--line:#EAE1DB;--shadow:0 5px 22px #5540390B}
+body {background:#FAF7F4}
+.page-content {background:transparent}
+.topbar,.sidebar {background:#FFFDFC}
+.sidebar {border-right-color:#EAE1DB}
+.sidebar nav a {color:#65514C;transition:background .18s,color .18s}
+.sidebar nav a:nth-child(4n+1):hover {background:#F3E5E1}
+.sidebar nav a:nth-child(4n+2):hover {background:#EAEDE5}
+.sidebar nav a:nth-child(4n+3):hover {background:#F7EBD8}
+.sidebar nav a:nth-child(4n):hover {background:#E9E9F2}
+.sidebar nav a.active {background:#65514C;color:#fff;box-shadow:0 5px 14px #65514C1C}
+.card,.stat-card {background:#fff;border-color:#EAE1DB;box-shadow:0 6px 20px #65514C0A}
+.card {transition:border-color .2s,box-shadow .2s}
+.card:hover {border-color:#DCC9C0}
+.stat-card {text-align:left;justify-items:start;padding:22px;border-radius:16px}
+.stat-card:nth-child(4n+1) {background:#F7EAE6;border-color:#EAD4CD}
+.stat-card:nth-child(4n+2) {background:#EAF1EB;border-color:#D6E5D8}
+.stat-card:nth-child(4n+3) {background:#F5ECF0;border-color:#EAD9E1}
+.stat-card:nth-child(4n) {background:#F8F0DF;border-color:#EBDFC4}
+.stat-card strong {color:#443632}
+.stat-icon {width:40px;height:40px;border-radius:12px}
+.welcome-card {background:linear-gradient(115deg,#F4E5DF,#FFFCF8 75%);border-color:#E8D5CE}
+.updates {background:#FFFCF8}
+.daily {background:#fff}
+.update-row:nth-child(3n+1) {background:#F7EBE6;border-left-color:#A18A83}
+.update-row:nth-child(3n+2) {background:#F0F3EC;border-left-color:#84987E}
+.update-row:nth-child(3n) {background:#FAF1E2;border-left-color:#C5A36B}
+.appointment:nth-child(even) {background:#FAF5F1}
+.appointment:nth-child(odd) {background:#F4F5F0}
+.table th {background:#F5EEE9;color:#65514C}
+.table tbody tr:nth-child(even) td {background:#FDF9F6}
+.table-hover tr:hover td {background:#F3E9E3}
+.btn-primary {background:#8C6E65;border-color:#8C6E65;color:#fff}
+.btn-primary:hover,.btn-primary:focus-visible {background:#65514C;border-color:#65514C;color:#fff}
+.btn-outline-primary {background:#fff;border-color:#D7BFB4;color:#65514C}
+.btn-outline-primary:hover {background:#F3E7E1}
+.public-hero {background:linear-gradient(135deg,#F7E9E2,#FCF8F3 65%,#F2F1E8)}
+.salon-hero {background:linear-gradient(125deg,#A18A83 0%,#927A72 55%,#65514C 100%)}
+.salon-details {background:#FFFFFF17;border-color:#FFFFFF50}
+.salon-social:nth-child(4n+1) {background:#FFFFFF2D}
+.salon-social:nth-child(4n+2) {background:#F5E8E138}
+.salon-social:nth-child(4n+3) {background:#E9F0E538}
+.salon-social:nth-child(4n) {background:#F9EEDB38}
+.booking-flow {color:#443632}
+.booking-stage {background:#fff;border-color:#EADCD4}
+.booking-stage>span {background:#8C6E65}
+.booking-progress>span.current {background:#8C6E65}
+.service-choice:nth-child(3n+1) {background:linear-gradient(100deg,#fff 70%,#F8E9E3)}
+.service-choice:nth-child(3n+2) {background:linear-gradient(100deg,#fff 70%,#F0F3EB)}
+.service-choice:nth-child(3n) {background:linear-gradient(100deg,#fff 70%,#FBF1DE)}
+.service-choice {border-left:4px solid #C5A36B}
+.service-choice:nth-child(3n+2) {border-left-color:#93A38B}
+.service-choice:nth-child(3n) {border-left-color:#C69B98}
+.service-action strong {color:#65514C}
+.booking-summary {background:#F5E9E4;border-color:#E8D5CE}
+.calendar-card {background:#FFFCFA}
+.time-card {background:#fff}
+.calendar-day.selected {background:#8C6E65;color:#fff}
+.time-slot {background:#FCF9F7;border-color:#E6DAD4}
+.time-slot:hover,.time-slot.selected,.time-slot[aria-pressed="true"] {background:#8C6E65;border-color:#8C6E65;color:#fff}
+.booking-review {background:#F6EBE6}
+.booking-review .booking-total strong {color:#8C6E65}
+.booking-confirmed {color:#443632}
+.page-agendamento_confirmado .page-content {background:#F0F5EF}
+.confirmed-details {background:#fff}
+.confirmed-details>div:nth-child(4n+1) .confirmed-icon {background:#F4E7E2;color:#8C6E65}
+.confirmed-details>div:nth-child(4n+2) .confirmed-icon {background:#EBF1EA;color:#6C896D}
+.confirmed-details>div:nth-child(4n+3) .confirmed-icon {background:#F5EBEF;color:#A1798D}
+.confirmed-details>div:nth-child(4n) .confirmed-icon {background:#F8EFD9;color:#9B7A43}
+.confirmed-code {background:#F7EAE3}
+.confirmed-check {background:#6E9A80}
+.form-control,.form-select {background:#fff;border-color:#E1D4CD}
+.form-control:focus,.form-select:focus {border-color:#A18A83;outline:3px solid #E8D5CE}
+@media(max-width:600px) {.stat-card {padding:17px}.service-choice {border-left-width:3px}}
+
+/* Foto de destaque da página inicial: imagem inteira, sem recorte. */
+.public-hero .hero-nails-image {
+  display:block;
+  width:clamp(94px,12vw,142px);
+  height:auto;
+  max-width:100%;
+  object-fit:contain;
+  margin:0 auto 18px;
+  border-radius:18px;
+  box-shadow:0 9px 24px #65514C20;
+}
+@media(max-width:600px) {
+  .public-hero .hero-nails-image {
+    width:clamp(88px,29vw,120px);
+    height:auto;
+    margin-bottom:16px;
+    border-radius:14px;
+  }
+}
+
+/* Destaque fotográfico maior e responsivo, sem cortar a fotografia. */
+.public-hero .hero-nails-image {width:min(100%, 340px);height:auto;max-height:none;object-fit:contain;margin:0 auto 22px;border-radius:22px;box-shadow:0 12px 32px #65514C22}
+@media(max-width:600px) {.public-hero .hero-nails-image {width:min(78vw, 290px);height:auto;margin-bottom:18px;border-radius:18px}}
+
+/* Página inicial: aproxima suavemente o título da fotografia. */
+.page-inicio .public-hero .hero-nails-image {margin-bottom:12px}
+@media(max-width:600px) {.page-inicio .public-hero .hero-nails-image {margin-bottom:10px}}
+
+/* Logo da página inicial: tamanho compacto e responsivo, sem cortes. */
+.page-inicio .hero-nails-image {
+  display:block;
+  width:min(100%, 220px);
+  height:auto;
+  max-height:180px;
+  object-fit:contain;
+  margin:0 auto 18px;
+  border-radius:0;
+  box-shadow:none;
+}
+.page-inicio .public-hero h1 { margin-top:12px; }
+@media(max-width:760px) {
+  .page-inicio .hero-nails-image { width:min(72vw, 190px); max-height:155px; margin-bottom:14px; }
+}
+
+/* Logo horizontal da tela de disponibilidade, igual à página inicial. */
+.page-consultar_disponibilidade .salon-logo {
+  width:min(100%,220px);
+  height:auto;
+  margin:0 auto 18px;
+  padding:0;
+  background:transparent;
+  border-radius:0;
+  display:block;
+}
+.page-consultar_disponibilidade .salon-logo img {
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:contain;
+}
+@media(max-width:760px) {
+  .page-consultar_disponibilidade .salon-logo {width:min(72vw,190px);margin-bottom:14px;}
+}
+
+/* ============================================================
+   AGENDA SIMPLES — IDENTIDADE ROSÉ / VINHO 2026
+   Baseada na paleta aprovada; exclusivamente apresentação.
+   ============================================================ */
+:root {
+  --purple:#7A0F2E;
+  --taupe:#B76E79;
+  --rose:#F8BBD0;
+  --gold:#E91E63;
+  --brown:#4A0D1F;
+  --purple-dark:#7A0F2E;
+  --lilac:#FCE4EC;
+  --ink:#4A0D1F;
+  --muted:#926A77;
+  --line:#F0D9E1;
+  --surface:#FFFFFF;
+  --bg:#FFF8FA;
+  --radius:18px;
+  --shadow:0 10px 30px #7A0F2E0C;
+}
+body {background:#FFF8FA;color:var(--ink)}
+h1,h2,h3,h4 {color:#4A0D1F;letter-spacing:-.035em}
+a {color:#9D1643}
+a:hover {color:#E91E63}
+:focus-visible {outline-color:#E91E63}
+.card,.stat-card,.appointment,.calendar-card,.time-card,.auth-card,.service-choice {
+  background:#fff;
+  border:1px solid #F0D9E1;
+  border-radius:20px;
+  box-shadow:0 8px 28px #7A0F2E0A;
+}
+.card:hover,.service-choice:hover {border-color:#F8BBD0}
+.btn {
+  border-radius:14px;
+  font-weight:650;
+  transition:background .18s ease,transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.btn:hover {transform:translateY(-1px);text-decoration:none}
+.btn-primary,.btn-primary:hover,.btn-primary:focus {
+  color:#fff;
+  border-color:#E91E63;
+  background:linear-gradient(110deg,#E91E63,#D91659);
+  box-shadow:0 8px 18px #E91E6328;
+}
+.btn-primary:hover {background:linear-gradient(110deg,#D91659,#B50E46);box-shadow:0 10px 22px #E91E6333}
+.btn-outline-primary {color:#7A0F2E;background:#fff;border:1px solid #DDA8B8}
+.btn-outline-primary:hover {color:#7A0F2E;background:#FCE4EC;border-color:#E91E63}
+.btn-warning {background:#F8BBD0;color:#7A0F2E;border-color:#F8BBD0}
+.btn-outline-danger {color:#B21D4E;border-color:#E9B6C5}
+.form-control,.form-select,input[type="date"],input[type="time"],textarea,select {
+  border-color:#EACFD8;
+  border-radius:12px;
+}
+.form-control:focus,.form-select:focus,input:focus-visible,textarea:focus-visible,select:focus-visible {
+  border-color:#E91E63;
+  outline-color:#F8BBD0;
+}
+::selection {background:#F8BBD0;color:#4A0D1F}
+.sidebar {
+  background:linear-gradient(175deg,#7A0F2E 0%,#650A25 58%,#4A0D1F 100%);
+  border-right:0;
+  box-shadow:6px 0 30px #4A0D1F12;
+}
+.sidebar .brand,.sidebar .brand-icon {color:#fff}
+.sidebar .brand {line-height:1.3}
+.sidebar .profile {border-bottom-color:#FFFFFF2B}
+.sidebar .profile small {color:#F8BBD0}
+.sidebar .profile strong {color:#fff}
+.sidebar .avatar {background:#FCE4EC;color:#7A0F2E}
+.sidebar nav a {color:#FFEAF1}
+.sidebar nav a:hover {background:#FFFFFF1C;color:#fff}
+.sidebar nav a.active {
+  background:linear-gradient(100deg,#E91E63,#F13A79);
+  color:#fff;
+  box-shadow:0 6px 20px #E91E6330;
+}
+.sidebar-bottom .btn-outline-primary {color:#fff;background:#FFFFFF14;border-color:#FFFFFF66}
+.sidebar-bottom .btn-outline-primary:hover {background:#FFFFFF28;color:#fff}
+.sidebar-bottom small {color:#F8BBD0}
+.sidebar .logout {color:#FFDCE8}
+.sidebar .logout:hover {color:#fff}
+.topbar,.public-header {background:#fff;border-bottom:1px solid #F0D9E1}
+.topbar {box-shadow:0 2px 12px #7A0F2E06}
+.public-header .brand {color:#7A0F2E}
+.page-footer {color:#B76E79}
+.page-heading p,.text-muted,.section-heading p {color:#926A77}
+.page-heading h1,.section-heading h2 {color:#4A0D1F}
+.stats .stat-card:nth-child(4n+1),.stat-card:nth-child(4n+1) {background:linear-gradient(135deg,#fff,#FFF1F6)}
+.stats .stat-card:nth-child(4n+2),.stat-card:nth-child(4n+2) {background:linear-gradient(135deg,#fff,#FCE4EC)}
+.stats .stat-card:nth-child(4n+3),.stat-card:nth-child(4n+3) {background:linear-gradient(135deg,#fff,#FFF8FA)}
+.stats .stat-card:nth-child(4n),.stat-card:nth-child(4n) {background:linear-gradient(135deg,#fff,#F9EBF0)}
+.stat-icon,.avatar,.welcome-spark {color:#E91E63}
+.purple,.rose {background:#FCE4EC;color:#B10D46}
+.green {background:#EAF6EF;color:#2B8A61}
+.amber {background:#FFF2DD;color:#A86C19}
+.welcome-card {
+  background:linear-gradient(125deg,#FCE4EC 0%,#FFF8FA 68%,#F8BBD055 100%);
+  border:1px solid #F5D7E2;
+  border-radius:24px;
+}
+.welcome-spark,.hero-spark,.step-number {color:#E91E63}
+.public-hero {
+  background:radial-gradient(circle at 85% 15%,#F8BBD077,transparent 35%),linear-gradient(135deg,#FCE4EC 0%,#FFF8FA 65%,#FFF0F5 100%);
+  border:1px solid #F6E0E8;
+  border-radius:28px;
+  box-shadow:0 12px 38px #7A0F2E0A;
+}
+.public-hero h1 {color:#7A0F2E}
+.public-hero p {color:#855968}
+.public-hero .hero-nails-image {box-shadow:none;object-fit:contain}
+.steps .card {background:#fff;border-color:#F0D9E1}
+.steps .card:nth-child(2) {background:#FFF1F6}
+.steps .card:nth-child(3) {background:#FFF8FA}
+.steps h2 {color:#7A0F2E}
+.salon-hero {
+  background:linear-gradient(135deg,#7A0F2E 0%,#A81449 55%,#E91E63 100%);
+  color:#fff;
+}
+.salon-hero h1,.salon-hero>p {color:#fff}
+.salon-details {background:#FFFFFF16;border-color:#FFFFFF55;box-shadow:0 12px 28px #4A0D1F1B}
+.salon-social {background:#FFFFFF24;color:#fff}
+.salon-social:hover {background:#FFFFFF40}
+.booking-flow {color:#4A0D1F}
+.booking-stage {background:#fff;border:1px solid #F0D9E1;border-radius:20px;color:#4A0D1F}
+.booking-stage>span,.booking-progress>span.current {background:#E91E63;color:#fff}
+.booking-progress>span.done {background:#7A0F2E;color:#fff}
+.booking-progress:before {background:#F8BBD0}
+.booking-progress small {color:#855968}
+.booking-summary {background:#FCE4EC;border:1px solid #F8BBD0;color:#7A0F2E}
+.booking-summary p {color:#855968}
+.service-choice {border-left:4px solid #E91E63}
+.service-choice:nth-child(3n+2) {border-left-color:#B76E79;background:#FFF8FA}
+.service-choice:nth-child(3n) {border-left-color:#7A0F2E;background:#FFF1F6}
+.service-action strong {color:#D91659}
+.calendar-heading button {color:#7A0F2E}
+.calendar-day:hover:not(:disabled) {background:#FCE4EC}
+.calendar-day.selected,.time-slot.selected {background:linear-gradient(120deg,#E91E63,#C51450);color:#fff;border-color:#E91E63;box-shadow:0 5px 12px #E91E632A}
+.time-slot:hover:not(.selected) {background:#FCE4EC;border-color:#F8BBD0}
+.continue-time {border-radius:14px}
+.confirmed-code {background:#FCE4EC;border:1px solid #F8BBD0;color:#7A0F2E}
+.confirmed-check {background:#E91E63;color:#fff}
+.confirmed-icon {background:#FCE4EC;color:#E91E63}
+.table th {background:#FFF1F6;color:#7A0F2E}
+.table-hover tr:hover td {background:#FFF8FA}
+.alert-success {background:#F1F9F4;color:#276747;border-color:#CFEAD9}
+.alert-danger {background:#FFF0F3;color:#A91C47;border-color:#F7C9D6}
+.alert-warning {background:#FFF5E8;color:#865619;border-color:#F4E0BF}
+.notification-dot {background:#E91E63}
+@media(max-width:760px) {
+  .sidebar {box-shadow:none}
+  .sidebar .mobile-menu summary {color:#fff}
+  .public-hero {border-radius:22px}
+  .card,.stat-card,.appointment,.service-choice,.time-card,.calendar-card {border-radius:16px}
+  .btn {min-height:42px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .btn {transition:none}
+  .btn:hover {transform:none}
+}
+
+/* Ajustes solicitados: marca compacta no cabeçalho e salão bege. */
+.brand .header-brand-mark {
+  position:relative;
+  display:inline-block;
+  width:35px;
+  height:25px;
+  overflow:hidden;
+  flex:0 0 35px;
+}
+.brand .header-brand-mark img {
+  display:block;
+  position:absolute;
+  width:100px;
+  max-width:none;
+  height:auto;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+}
+.brand>span:not(.brand-icon):not(.header-brand-mark) {
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+.public-header .brand,.sidebar .brand {gap:7px}
+.salon-hero {
+  background:linear-gradient(145deg,#F5E5D8 0%,#F7EEE6 55%,#F1DCCF 100%);
+  color:#4A0D1F;
+  border-bottom:1px solid #E9D0C3;
+}
+.salon-hero h1 {color:#7A0F2E}
+.salon-hero>p {color:#805465}
+.salon-details {
+  background:#FFFFFFB8;
+  border:1px solid #E3C9BD;
+  color:#4A0D1F;
+  box-shadow:0 10px 30px #7A0F2E0C;
+}
+.salon-details>p {color:#6D3546}
+.salon-social {
+  background:#FCE4EC;
+  color:#7A0F2E;
+  border:1px solid #EAC9D3;
+}
+.salon-social:hover {background:#F8BBD0;color:#4A0D1F}
+.page-consultar_disponibilidade .salon-logo {background:transparent}
+.page-consultar_disponibilidade .salon-logo img {filter:none}
+@media(max-width:600px) {
+  .brand .header-brand-mark {width:30px;height:23px;flex-basis:30px}
+  .brand .header-brand-mark img {width:90px}
+  .brand>span:not(.brand-icon):not(.header-brand-mark) {font-size:15px}
+}
+
+/* Sidebar bege — contraste confortável no desktop e no celular. */
+.admin-layout .sidebar {
+  background:linear-gradient(175deg,#F7F1ED 0%,#F0E2D8 55%,#E8D5CE 100%);
+  border-right:1px solid #DEC8BE;
+  box-shadow:5px 0 25px #65514C0C;
+}
+.admin-layout .sidebar .brand,
+.admin-layout .sidebar .brand>span,
+.admin-layout .sidebar .profile strong {color:#4A0D1F}
+.admin-layout .sidebar .profile {border-bottom-color:#DCC6BC}
+.admin-layout .sidebar .profile small,
+.admin-layout .sidebar-bottom small {color:#805C58}
+.admin-layout .sidebar .avatar {background:#FFFFFF;color:#7A0F2E}
+.admin-layout .sidebar nav a {color:#65514C}
+.admin-layout .sidebar nav a:hover {background:#FFFFFFA8;color:#4A0D1F}
+.admin-layout .sidebar nav a.active {
+  background:#A18A83;
+  color:#FFFFFF;
+  box-shadow:0 5px 16px #65514C24;
+}
+.admin-layout .sidebar-bottom .btn-outline-primary {
+  color:#65514C;
+  background:#FFFFFFA8;
+  border-color:#CDB6AB;
+}
+.admin-layout .sidebar-bottom .btn-outline-primary:hover {background:#FFFFFF;color:#4A0D1F}
+.admin-layout .sidebar .logout {color:#65514C}
+.admin-layout .sidebar .logout:hover {color:#7A0F2E}
+.admin-layout .sidebar .mobile-menu summary {color:#65514C}
+
+/* Navegação administrativa móvel: drawer sobreposto à dashboard. */
+.mobile-nav-toggle,.mobile-nav-close,.mobile-nav-overlay {display:none}
+@media(max-width:760px) {
+  .admin-layout {overflow-x:hidden}
+  .admin-layout .mobile-nav-toggle {
+    display:grid;place-items:center;position:fixed;top:10px;left:12px;
+    width:42px;height:42px;z-index:1001;border:1px solid #E8CFC7;
+    border-radius:12px;background:#FFFDFC;color:#7A0F2E;
+    box-shadow:0 3px 14px #4A0D1F14;font-size:22px;cursor:pointer;
+  }
+  .admin-layout .mobile-nav-close {
+    display:grid;place-items:center;position:absolute;top:12px;right:12px;
+    width:36px;height:36px;border:0;border-radius:10px;
+    background:#FFFFFFB8;color:#7A0F2E;font-size:29px;cursor:pointer;
+  }
+  .admin-layout .mobile-nav-overlay {
+    display:block;position:fixed;inset:0;background:#230D17A3;
+    opacity:0;visibility:hidden;pointer-events:none;z-index:1100;
+    transition:opacity .25s ease,visibility .25s ease;
+  }
+  .admin-layout .sidebar {
+    position:fixed;inset:0 auto 0 0;width:min(310px,86vw);height:100dvh;
+    max-height:100dvh;z-index:1101;display:flex;flex-direction:column;
+    padding:24px 18px 18px;overflow-y:auto;overscroll-behavior:contain;
+    border-right:1px solid #DEC8BE;border-bottom:0;
+    transform:translateX(-105%);visibility:hidden;
+    transition:transform .25s ease,visibility .25s ease;
+    box-shadow:8px 0 30px #4A0D1F20;
+  }
+  .admin-layout.mobile-nav-open .sidebar {transform:translateX(0);visibility:visible}
+  .admin-layout.mobile-nav-open .mobile-nav-overlay {
+    opacity:1;visibility:visible;pointer-events:auto;
+  }
+  .admin-layout.mobile-nav-open {overflow:hidden}
+  .admin-layout .sidebar .brand {padding-right:38px;font-size:18px}
+  .admin-layout .sidebar .profile {margin:20px 0 18px}
+  .admin-layout .sidebar .mobile-menu {display:block;width:100%}
+  .admin-layout .sidebar .mobile-menu nav {display:grid;grid-template-columns:1fr;gap:5px}
+  .admin-layout .sidebar .mobile-menu nav a {
+    display:flex;align-items:center;gap:13px;width:100%;
+    padding:13px 14px;border-radius:12px;font-size:14px;
+  }
+  .admin-layout .sidebar .mobile-menu nav a>span {min-width:19px;text-align:center}
+  .admin-layout .sidebar-bottom {
+    margin-top:auto;display:flex;flex-direction:column;align-items:stretch;
+    gap:10px;padding-top:18px;
+  }
+  .admin-layout .sidebar-bottom .btn {width:100%;text-align:center}
+  .admin-layout .sidebar-bottom form {width:100%}
+  .admin-layout .sidebar-bottom .logout {width:100%;text-align:left;padding:12px}
+  .admin-layout .sidebar-bottom small {display:block;text-align:center}
+  .admin-layout .workspace {margin-left:0;width:100%;min-width:0}
+  .admin-layout .topbar {
+    min-height:62px;padding:13px 16px 13px 65px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .admin-layout .topbar .text-muted {display:none}
+  .admin-layout .page-content {padding:22px 16px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .admin-layout .sidebar,.admin-layout .mobile-nav-overlay {transition:none}
+}
+
+/* Rodapé institucional da home: compacto no desktop e adaptativo no mobile. */
+.page-inicio .home-footer {
+  margin-top:40px;
+  padding:22px 20px 25px;
+  border-top:1px solid #F0D9E1;
+  background:#FFF8FA;
+  color:#805465;
+  font-size:12px;
+  line-height:1.6;
+}
+.page-inicio .home-footer-inner {
+  width:100%;
+  max-width:1100px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-align:center;
+}
+.page-inicio .home-footer p {margin:0}
+.page-inicio .home-footer-legal {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  color:#7A0F2E;
+}
+@media(max-width:760px) {
+  .page-inicio .home-footer {
+    margin-top:28px;
+    padding:20px 16px 24px;
+    font-size:11px;
+  }
+  .page-inicio .home-footer-inner {gap:7px}
+  .page-inicio .home-footer-legal {gap:8px}
+}
+
+/* Ícones vetoriais das informações e redes do salão. */
+.salon-details .salon-icon {
+  display:inline-block;
+  width:16px;
+  height:16px;
+  flex:0 0 16px;
+  vertical-align:middle;
+  color:inherit;
+}
+.salon-details > p:not(.mvp-notice) {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+}
+.salon-details .salon-social {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+}
+@media(max-width:480px) {
+  .salon-details .salon-icon {width:15px;height:15px;flex-basis:15px}
+  .salon-details .salon-social {gap:7px}
+}
+
+/* Links institucionais com aviso de MVP, sem navegação. */
+.page-inicio .home-footer-link {
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  padding:3px 2px;
+  cursor:pointer;
+  text-decoration:none;
+}
+.page-inicio .home-footer-link:hover,
+.page-inicio .home-footer-link:focus-visible {
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.page-inicio .home-footer-link:focus-visible {
+  outline:2px solid currentColor;
+  outline-offset:3px;
+  border-radius:2px;
+}
+.page-inicio #footer-mvp-aviso {
+  margin:6px auto 0;
+  text-align:center;
+}
+.page-inicio #footer-mvp-aviso[hidden] {display:none}
+
+/* Respiro entre o destaque e os três passos, somente no desktop. */
+@media (min-width: 761px) {
+  .page-inicio .public-hero + .steps { margin-top: 16px; }
+}
+
+/* Controle compacto de situação na agenda, com ajuste responsivo. */
+.page-agenda_profissional .agenda-situacao-cell {min-width:0}
+.page-agenda_profissional .agenda-situacao-form {display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;margin:0}
+.page-agenda_profissional .agenda-situacao-select {width:112px;min-width:0;max-width:112px;min-height:32px;padding:5px 24px 5px 9px;font-size:12px;line-height:1.3;border-radius:9px}
+.page-agenda_profissional .agenda-situacao-save {min-height:32px;padding:5px 10px;font-size:12px;line-height:1.3;border-radius:9px;white-space:nowrap}
+@media(max-width:760px) {
+  .page-agenda_profissional .agenda-situacao-form {gap:6px}
+  .page-agenda_profissional .agenda-situacao-select {width:108px;max-width:108px;min-height:38px;font-size:13px}
+  .page-agenda_profissional .agenda-situacao-save {min-height:38px;padding:7px 10px;font-size:12px}
+}

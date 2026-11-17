@@ -1,6 +1,9 @@
 ﻿import os
 import secrets
 import sqlite3
+import hashlib
+import time
+from datetime import timedelta
 from functools import wraps
 from notificacoes import registrar_notificacao
 from flask import Flask, render_template, request, redirect, url_for, session
@@ -12,6 +15,64 @@ app = Flask(__name__)
 # Chave necessária para proteger as sessões de login.
 # Em produção, deve ser definida na variável FLASK_SECRET_KEY.
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=bool(os.environ.get("RAILWAY_ENVIRONMENT")),
+    PERMANENT_SESSION_LIFETIME=timedelta(days=14),
+)
+if os.environ.get("RAILWAY_ENVIRONMENT") and not os.environ.get("FLASK_SECRET_KEY"):
+    app.logger.warning("FLASK_SECRET_KEY ausente: sessoes serao invalidadas em reinicializacoes.")
+
+
+@app.after_request
+def cabecalhos_sessao(resposta):
+    resposta.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resposta.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    resposta.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    if request.endpoint in ("login", "sair"):
+        resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
+def _chave_limite_login(tipo, valor):
+    return hashlib.sha256((tipo + ":" + valor).encode("utf-8")).hexdigest()
+
+
+def _controle_tentativas_login(login_informado, sucesso=False):
+    """Limite compartilhado via SQLite, persistente entre reinicializacoes.
+
+    Ate cinco falhas por login em quinze minutos. Nao guarda identificadores em texto.
+    """
+    chave = _chave_limite_login("conta", login_informado.casefold())
+    agora = int(time.time())
+    janela = 900
+    with conectar() as conexao:
+        conexao.execute("""CREATE TABLE IF NOT EXISTS limite_login (
+            chave TEXT PRIMARY KEY, tentativas INTEGER NOT NULL,
+            inicio INTEGER NOT NULL)""")
+        conexao.execute("BEGIN IMMEDIATE")
+        registro = conexao.execute(
+            "SELECT tentativas, inicio FROM limite_login WHERE chave = ?", (chave,)
+        ).fetchone()
+        if sucesso:
+            conexao.execute("DELETE FROM limite_login WHERE chave = ?", (chave,))
+            return False
+        if registro and agora - registro[1] < janela and registro[0] >= 5:
+            return True
+        if not registro or agora - registro[1] >= janela:
+            conexao.execute(
+                "INSERT INTO limite_login(chave, tentativas, inicio) VALUES (?, 1, ?) "
+                "ON CONFLICT(chave) DO UPDATE SET tentativas=1, inicio=excluded.inicio",
+                (chave, agora),
+            )
+        else:
+            conexao.execute(
+                "UPDATE limite_login SET tentativas = tentativas + 1 WHERE chave = ?",
+                (chave,),
+            )
+        return False
+
 
 
 def login_obrigatorio(funcao):
@@ -29,59 +90,63 @@ def inicio():
     return render_template("index.html")
 
 
-# UC09 - Realizar Cadastro
+# UC09 - Cadastro da profissional
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
-    erro = None
-    sucesso = None
+    import re
+    from database import atualizar_cadastro_profissional
+    from recuperacao import email_valido
 
+    erro = sucesso = None
+    token = session.setdefault("csrf_cadastro", secrets.token_urlsafe(32))
     conexao = conectar()
-
     try:
-        profissional = conexao.execute(
-            "SELECT id_profissional FROM profissional LIMIT 1"
-        ).fetchone()
-
-        if profissional:
-            return render_template("cadastro.html", cadastro_existente=True)
-
+        atualizar_cadastro_profissional(conexao)
+        # A tela permanece acessível, mas apenas a primeira conta pode ser criada.
         if request.method == "POST":
             nome = request.form.get("nome", "").strip()
-            login_informado = request.form.get("login", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            whatsapp = re.sub(r"\D", "", request.form.get("whatsapp", ""))
             senha = request.form.get("senha", "")
             confirmar_senha = request.form.get("confirmar_senha", "")
-
-            if not nome or not login_informado or not senha:
-                erro = "Preencha todos os campos obrigatórios."
-
-            elif len(senha) < 8:
-                erro = "A senha deve possuir pelo menos 8 caracteres."
-
+            if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+                erro = "Formulário inválido. Atualize a página e tente novamente."
+            elif not nome or len(nome) > 100:
+                erro = "Informe seu nome completo, com até 100 caracteres."
+            elif not email_valido(email):
+                erro = "Informe um e-mail válido."
+            elif len(whatsapp) not in (10, 11):
+                erro = "Informe o WhatsApp com DDD, usando 10 ou 11 dígitos."
+            elif not 8 <= len(senha) <= 128:
+                erro = "A senha deve possuir entre 8 e 128 caracteres."
             elif senha != confirmar_senha:
                 erro = "As senhas informadas não coincidem."
-
             else:
-                senha_hash = generate_password_hash(senha)
-
+                # O campo login armazena o e-mail nas novas contas.
+                # Contas antigas continuam aceitando seu login original.
                 try:
-                    conexao.execute(
-                        """
-                        INSERT INTO profissional (nome, login, senha_hash)
-                        VALUES (?, ?, ?)
-                        """,
-                        (nome, login_informado, senha_hash),
-                    )
-                    conexao.commit()
-                    sucesso = "Cadastro realizado com sucesso!"
-
+                    conexao.execute("BEGIN IMMEDIATE")
+                    # Verificação dentro da transação: impede duas contas criadas
+                    # simultaneamente por requisições concorrentes.
+                    existente = conexao.execute(
+                        "SELECT 1 FROM profissional LIMIT 1"
+                    ).fetchone()
+                    if existente:
+                        conexao.rollback()
+                        erro = "Já existe um profissional cadastrado."
+                    else:
+                        conexao.execute(
+                            "INSERT INTO profissional (nome, login, senha_hash, whatsapp) VALUES (?, ?, ?, ?)",
+                            (nome, email, generate_password_hash(senha), whatsapp),
+                        )
+                        conexao.commit()
+                        sucesso = "Conta criada com sucesso! Entre com seu e-mail e senha."
                 except sqlite3.IntegrityError:
                     conexao.rollback()
-                    erro = "Não foi possível realizar o cadastro. Verifique o login."
-
+                    erro = "Não foi possível criar a conta com este e-mail."
     finally:
         conexao.close()
-
-    return render_template("cadastro.html", erro=erro, sucesso=sucesso)
+    return render_template("cadastro.html", erro=erro, sucesso=sucesso, csrf_token=token)
 
 
 # UC10 - Realizar Login
@@ -91,42 +156,283 @@ def login():
         return redirect(url_for("painel"))
 
     erro = None
-
+    token = session.setdefault("csrf_login", secrets.token_urlsafe(32))
     if request.method == "POST":
+        if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+            return "Formulário inválido. Atualize a página e tente novamente.", 400
+
         login_informado = request.form.get("login", "").strip()
+        if "@" in login_informado:
+            login_informado = login_informado.lower()
         senha = request.form.get("senha", "")
 
-        conexao = conectar()
+        # Rejeita identificadores excessivos antes de consultar o banco.
+        if not login_informado or len(login_informado) > 254 or len(senha) > 1024:
+            erro = "Login ou senha inválidos."
+        else:
+            # Verifica o limite sem consumir uma tentativa; a falha e contabilizada abaixo.
+            chave = _chave_limite_login("conta", login_informado.casefold())
+            agora = int(time.time())
+            with conectar() as conexao:
+                conexao.execute("""CREATE TABLE IF NOT EXISTS limite_login (
+                    chave TEXT PRIMARY KEY, tentativas INTEGER NOT NULL,
+                    inicio INTEGER NOT NULL)""")
+                registro = conexao.execute(
+                    "SELECT tentativas, inicio FROM limite_login WHERE chave = ?", (chave,)
+                ).fetchone()
+            if registro and registro[0] >= 5 and agora - registro[1] < 900:
+                erro = "Muitas tentativas. Aguarde 15 minutos e tente novamente."
+            else:
+                conexao = conectar()
+                try:
+                    profissional = conexao.execute(
+                        "SELECT id_profissional, nome, senha_hash FROM profissional WHERE login = ?",
+                        (login_informado,),
+                    ).fetchone()
+                finally:
+                    conexao.close()
 
+                if profissional and check_password_hash(profissional[2], senha):
+                    _controle_tentativas_login(login_informado, sucesso=True)
+                    session.clear()
+                    session.permanent = True
+                    session["id_profissional"] = profissional[0]
+                    session["nome_profissional"] = profissional[1]
+                    return redirect(url_for("painel"))
+
+                _controle_tentativas_login(login_informado)
+                erro = "Login ou senha inválidos."
+
+    return render_template("login.html", erro=erro, csrf_token=token)
+
+@app.route("/esqueci-minha-senha", methods=["GET", "POST"])
+def esqueci_minha_senha():
+    import time
+    import smtplib
+    from recuperacao import email_valido, configuracao_email, gerar_token, enviar_recuperacao
+
+    token = session.setdefault("csrf_recuperacao", secrets.token_urlsafe(32))
+    erro = sucesso = None
+    status = 200
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        config = configuracao_email()
+        if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+            erro, status = "Formulário inválido. Atualize a página.", 400
+        elif not email_valido(email):
+            erro = "Informe um e-mail válido."
+        elif config is None:
+            erro, status = "A recuperação por e-mail está temporariamente indisponível. Tente novamente mais tarde.", 503
+        elif time.time() - session.get("ultima_recuperacao", 0) < 60:
+            erro, status = "Aguarde um minuto antes de solicitar outro link.", 429
+        else:
+            session["ultima_recuperacao"] = time.time()
+            conexao = conectar()
+            try:
+                profissional = conexao.execute(
+                    "SELECT id_profissional, senha_hash, login FROM profissional WHERE lower(login) = ?",
+                    (email,),
+                ).fetchone()
+            finally:
+                conexao.close()
+            sucesso = "Se este e-mail estiver cadastrado, você receberá um link para redefinir sua senha. Confira também o spam."
+            if profissional:
+                try:
+                    enviar_recuperacao(profissional[2], url_for("redefinir_senha", token=gerar_token(profissional)), config)
+                except (OSError, smtplib.SMTPException):
+                    # Não expõe conta, token ou credenciais na resposta/log.
+                    app.logger.error("Falha no envio de recuperação por SMTP.")
+    resposta = app.make_response((render_template("esqueci_senha.html", erro=erro, sucesso=sucesso, csrf_token=token), status))
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
+@app.route("/redefinir-senha/<token>", methods=["GET", "POST"])
+def redefinir_senha(token):
+    from itsdangerous import BadSignature, SignatureExpired
+    from recuperacao import serializador, assinatura_senha
+
+    erro = None
+    valido = False
+    sucesso = False
+    csrf = session.setdefault("csrf_redefinicao", secrets.token_urlsafe(32))
+    conexao = conectar()
+    try:
         try:
+            dados = serializador().loads(token, max_age=1800)
             profissional = conexao.execute(
-                """
-                SELECT id_profissional, nome, senha_hash
-                FROM profissional
-                WHERE login = ?
-                """,
-                (login_informado,),
+                "SELECT id_profissional, senha_hash FROM profissional WHERE id_profissional = ?",
+                (dados["id"],),
             ).fetchone()
-        finally:
-            conexao.close()
-
-        if profissional and check_password_hash(profissional[2], senha):
-            session.clear()
-            session["id_profissional"] = profissional[0]
-            session["nome_profissional"] = profissional[1]
-
-            return redirect(url_for("painel"))
-
-        erro = "Login ou senha inválidos."
-
-    return render_template("login.html", erro=erro)
+            valido = bool(profissional and secrets.compare_digest(dados["senha"], assinatura_senha(profissional[1])))
+        except (BadSignature, SignatureExpired, KeyError, TypeError):
+            valido = False
+        if not valido:
+            erro = "Este link é inválido, expirou ou já foi utilizado. Solicite um novo link."
+        elif request.method == "POST":
+            senha = request.form.get("senha", "")
+            if not secrets.compare_digest(csrf, request.form.get("csrf_token", "")):
+                erro = "Formulário inválido. Atualize a página."
+            elif not 8 <= len(senha) <= 128:
+                erro = "A senha deve possuir entre 8 e 128 caracteres."
+            elif senha != request.form.get("confirmar_senha", ""):
+                erro = "As senhas informadas não coincidem."
+            else:
+                resultado = conexao.execute(
+                    "UPDATE profissional SET senha_hash = ? WHERE id_profissional = ? AND senha_hash = ?",
+                    (generate_password_hash(senha), profissional[0], profissional[1]),
+                )
+                conexao.commit()
+                if resultado.rowcount == 1:
+                    session.clear()
+                    sucesso = True
+                else:
+                    valido = False
+                    erro = "Este link já foi utilizado. Solicite um novo link."
+    finally:
+        conexao.close()
+    resposta = app.make_response(render_template("redefinir_senha.html", erro=erro, valido=valido, sucesso=sucesso, csrf_token=csrf))
+    resposta.headers["Referrer-Policy"] = "no-referrer"
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
 
 
 # Painel administrativo protegido
 @app.route("/painel")
 @login_obrigatorio
 def painel():
-    return render_template("painel.html", nome=session["nome_profissional"])
+    from datetime import date, timedelta
+
+    erro = None
+    try:
+        dia = date.fromisoformat(request.args.get("data", date.today().isoformat()))
+    except ValueError:
+        dia = date.today()
+        erro = "Data inválida. Exibindo a agenda de hoje."
+    conexao = conectar()
+    try:
+        from database import atualizar_cadastro_profissional
+        atualizar_cadastro_profissional(conexao)
+        atendimentos = conexao.execute(
+            """SELECT a.hora, c.nome, s.nome, a.status, a.duracao_minutos
+               FROM agendamento a JOIN cliente c ON c.id_cliente = a.id_cliente
+               JOIN servico s ON s.id_servico = a.id_servico
+               WHERE s.id_profissional = ? AND a.data = ? ORDER BY a.hora""",
+            (session["id_profissional"], dia.isoformat()),
+        ).fetchall()
+        avisos = conexao.execute(
+            """SELECT n.tipo, c.nome, a.data, a.hora, n.id_notificacao FROM notificacao n
+               JOIN agendamento a ON a.id_agendamento = n.id_agendamento
+               JOIN cliente c ON c.id_cliente = a.id_cliente
+               JOIN servico s ON s.id_servico = a.id_servico
+               WHERE s.id_profissional = ? AND n.visualizada = 0
+               ORDER BY n.id_notificacao DESC LIMIT 3""",
+            (session["id_profissional"],),
+        ).fetchall()
+        servicos_ativos = conexao.execute(
+            "SELECT COUNT(*) FROM servico WHERE id_profissional = ? AND ativo = 1",
+            (session["id_profissional"],),
+        ).fetchone()[0]
+        periodos = conexao.execute(
+            "SELECT COUNT(*) FROM horario_atendimento WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()[0]
+        estabelecimento = conexao.execute(
+            "SELECT nome_empresa, cidade, configuracao_concluida FROM profissional WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()
+    finally:
+        conexao.close()
+    totais = {status: sum(a[3] == status for a in atendimentos)
+              for status in ("agendado", "concluido", "cancelado", "falta")}
+    return render_template(
+        "painel.html", nome=session["nome_profissional"], atendimentos=atendimentos,
+        totais=totais, avisos=avisos, dia=dia, erro=erro,
+        csrf_notificacoes=session.setdefault("csrf_notificacoes", secrets.token_urlsafe(32)),
+        anterior=(dia - timedelta(days=1)).isoformat() if dia > date.min else None,
+        proximo=(dia + timedelta(days=1)).isoformat() if dia < date.max else None,
+        servicos_ativos=servicos_ativos, periodos=periodos,
+        estabelecimento_configurado=bool(estabelecimento and estabelecimento[0].strip() and estabelecimento[1].strip()),
+        configuracao_pendente=bool(estabelecimento and not estabelecimento[2]),
+    )
+
+
+def configuracao_inicial_pendente():
+    """O assistente aparece somente até a primeira conclusão."""
+    from database import atualizar_cadastro_profissional
+    with conectar() as conexao:
+        atualizar_cadastro_profissional(conexao)
+        registro = conexao.execute(
+            "SELECT configuracao_concluida FROM profissional WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()
+    return bool(registro and not registro[0])
+
+
+# Configuração dos dados do estabelecimento
+@app.route("/estabelecimento", methods=["GET", "POST"])
+@login_obrigatorio
+def configurar_estabelecimento():
+    import re
+    from database import atualizar_cadastro_profissional
+
+    erro = sucesso = None
+    token = session.setdefault("csrf_estabelecimento", secrets.token_urlsafe(32))
+    conexao = conectar()
+    try:
+        atualizar_cadastro_profissional(conexao)
+        campos = ("nome_empresa", "frase_estabelecimento", "logradouro", "numero", "complemento", "bairro", "cep", "cidade")
+        registro = conexao.execute(
+            "SELECT " + ", ".join(campos) + " FROM profissional WHERE id_profissional = ?",
+            (session["id_profissional"],),
+        ).fetchone()
+        if registro is None:
+            return redirect(url_for("login"))
+        dados = dict(zip(campos, registro))
+        configuracao_pendente = configuracao_inicial_pendente()
+        if request.method == "POST":
+            dados = {campo: request.form.get(campo, "").strip() for campo in campos}
+            dados["cep"] = re.sub(r"\D", "", dados["cep"])
+            if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+                erro = "Formulário inválido. Atualize a página e tente novamente."
+            elif any(not dados[campo] for campo in ("nome_empresa", "frase_estabelecimento", "logradouro", "numero", "bairro", "cep", "cidade")):
+                erro = "Preencha todos os campos obrigatórios."
+            elif len(dados["cep"]) != 8:
+                erro = "Informe um CEP válido com 8 dígitos."
+            elif any(len(valor) > (150 if campo in ("complemento", "frase_estabelecimento") else 100) for campo, valor in dados.items()):
+                erro = "Um dos campos ultrapassou o limite de caracteres."
+            else:
+                finalizar = configuracao_pendente and request.form.get("finalizar_configuracao") == "1"
+                if finalizar:
+                    tem_servico = conexao.execute(
+                        "SELECT 1 FROM servico WHERE id_profissional = ? AND ativo = 1 LIMIT 1",
+                        (session["id_profissional"],),
+                    ).fetchone()
+                    tem_horario = conexao.execute(
+                        "SELECT 1 FROM horario_atendimento WHERE id_profissional = ? LIMIT 1",
+                        (session["id_profissional"],),
+                    ).fetchone()
+                    if not tem_servico or not tem_horario:
+                        erro = "Antes de finalizar, cadastre pelo menos um serviço ativo e um horário de atendimento."
+                if not erro:
+                    conexao.execute(
+                    "UPDATE profissional SET " + ", ".join(campo + " = ?" for campo in campos)
+                    + " WHERE id_profissional = ?",
+                    (*[dados[campo] for campo in campos], session["id_profissional"]),
+                    )
+                    if finalizar:
+                        conexao.execute(
+                            "UPDATE profissional SET configuracao_concluida = 1 WHERE id_profissional = ?",
+                            (session["id_profissional"],),
+                        )
+                    conexao.commit()
+                    if finalizar:
+                        return redirect(url_for("painel"))
+                    sucesso = "Dados do estabelecimento salvos com sucesso."
+    finally:
+        conexao.close()
+    return render_template("estabelecimento.html", dados=dados, erro=erro, sucesso=sucesso, csrf_token=token,
+                           configuracao_pendente=configuracao_pendente)
 
 
 # Encerrar sessão
@@ -210,7 +516,9 @@ def listar_servicos():
         conexao.close()
 
     return render_template(
-        "servicos.html", servicos=servicos, erro=erro, csrf_token=token
+        "servicos.html", servicos=servicos, erro=erro, csrf_token=token,
+        configuracao_pendente=configuracao_inicial_pendente(),
+        pode_avancar=any(servico[4] for servico in servicos)
     )
 
 
@@ -458,6 +766,8 @@ def listar_horarios():
     return render_template(
         "horarios.html",
         horarios=horarios,
+        configuracao_pendente=configuracao_inicial_pendente(),
+        pode_avancar=bool(horarios),
         dias_semana=dias_semana,
         erro=erro,
         csrf_token=token,
@@ -614,110 +924,62 @@ def editar_horario(id_horario):
 @login_obrigatorio
 def listar_bloqueios():
     import re
-    from datetime import date
+    from database import atualizar_bloqueios_semanais
 
     erro = None
     formulario = request.form
-
-    token = session.get("csrf_bloqueios")
-    if not token:
-        token = secrets.token_urlsafe(32)
-        session["csrf_bloqueios"] = token
-
+    dias_semana = ("Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira",
+                   "Sexta-feira", "Sábado", "Domingo")
+    token = session.setdefault("csrf_bloqueios", secrets.token_urlsafe(32))
     conexao = conectar()
-
     try:
+        atualizar_bloqueios_semanais(conexao)
         if request.method == "POST":
-            token_recebido = formulario.get("csrf_token", "")
-            data_texto = formulario.get("data", "")
+            dia_texto = formulario.get("dia_semana", "")
             hora_inicio = formulario.get("hora_inicio", "")
             hora_fim = formulario.get("hora_fim", "")
-
-            try:
-                if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", data_texto):
-                    raise ValueError
-                data_bloqueio = date.fromisoformat(data_texto)
-            except ValueError:
-                data_bloqueio = None
-
             formato_hora = r"(?:[01]\d|2[0-3]):[0-5]\d"
 
-            if not secrets.compare_digest(token, token_recebido):
+            if not secrets.compare_digest(token, formulario.get("csrf_token", "")):
                 erro = "Formulário inválido. Atualize a página."
-
-            elif data_bloqueio is None:
-                erro = "Informe uma data válida."
-
-            elif data_bloqueio < date.today():
-                erro = "Não é permitido cadastrar bloqueios em datas passadas."
-
-            elif not (
-                re.fullmatch(formato_hora, hora_inicio)
-                and re.fullmatch(formato_hora, hora_fim)
-            ):
+            elif dia_texto not in tuple(str(d) for d in range(7)):
+                erro = "Selecione um dia da semana válido."
+            elif not (re.fullmatch(formato_hora, hora_inicio) and re.fullmatch(formato_hora, hora_fim)):
                 erro = "Informe horários válidos."
-
             elif hora_inicio >= hora_fim:
                 erro = "O horário inicial deve ser anterior ao final."
-
             else:
+                dia_semana = int(dia_texto)
                 conflito = conexao.execute(
-                    """
-                    SELECT id_bloqueio
-                    FROM bloqueio
-                    WHERE id_profissional = ?
-                      AND data = ?
-                      AND hora_inicio < ?
-                      AND hora_fim > ?
-                    LIMIT 1
-                    """,
-                    (
-                        session["id_profissional"],
-                        data_texto,
-                        hora_fim,
-                        hora_inicio,
-                    ),
+                    """SELECT 1 FROM bloqueio
+                       WHERE id_profissional = ? AND dia_semana = ?
+                         AND hora_inicio < ? AND hora_fim > ? LIMIT 1""",
+                    (session["id_profissional"], dia_semana, hora_fim, hora_inicio),
                 ).fetchone()
-
                 if conflito:
-                    erro = "Este período já possui um bloqueio."
+                    erro = "Este dia já possui um bloqueio nesse período."
                 else:
+                    # A coluna data é preservada para compatibilidade com o esquema antigo.
+                    # Bloqueios recorrentes são identificados exclusivamente por dia_semana.
                     conexao.execute(
-                        """
-                        INSERT INTO bloqueio
-                            (id_profissional, data, hora_inicio, hora_fim)
-                        VALUES (?, ?, ?, ?)
-                        """,
-                        (
-                            session["id_profissional"],
-                            data_texto,
-                            hora_inicio,
-                            hora_fim,
-                        ),
+                        """INSERT INTO bloqueio (id_profissional, data, dia_semana, hora_inicio, hora_fim)
+                           VALUES (?, '', ?, ?, ?)""",
+                        (session["id_profissional"], dia_semana, hora_inicio, hora_fim),
                     )
-
                     conexao.commit()
                     return redirect(url_for("listar_bloqueios"))
 
         bloqueios = conexao.execute(
-            """
-            SELECT id_bloqueio, data, hora_inicio, hora_fim
-            FROM bloqueio
-            WHERE id_profissional = ?
-            ORDER BY data, hora_inicio
-            """,
+            """SELECT id_bloqueio, dia_semana, hora_inicio, hora_fim, data
+               FROM bloqueio WHERE id_profissional = ?
+               ORDER BY CASE WHEN dia_semana IS NULL THEN 1 ELSE 0 END,
+                        dia_semana, hora_inicio, data""",
             (session["id_profissional"],),
         ).fetchall()
-
         return render_template(
-            "bloqueios.html",
-            bloqueios=bloqueios,
-            erro=erro,
-            csrf_token=token,
-            data_minima=date.today().isoformat(),
-            formulario=formulario,
+            "bloqueios.html", bloqueios=bloqueios, erro=erro,
+            csrf_token=token, formulario=formulario, dias_semana=dias_semana,
         )
-
     finally:
         conexao.close()
 
@@ -765,12 +1027,20 @@ def consultar_disponibilidade():
     conexao = conectar()
 
     try:
+        from database import atualizar_cadastro_profissional
+        atualizar_cadastro_profissional(conexao)
         servicos = conexao.execute("""
             SELECT id_servico, nome, preco, duracao
             FROM servico
             WHERE ativo = 1
             ORDER BY nome
             """).fetchall()
+        estabelecimento = conexao.execute("""
+            SELECT nome_empresa, cidade, whatsapp, frase_estabelecimento
+            FROM profissional
+            WHERE trim(nome_empresa) != '' AND trim(cidade) != ''
+            ORDER BY id_profissional LIMIT 1
+        """).fetchone()
     finally:
         conexao.close()
 
@@ -780,6 +1050,10 @@ def consultar_disponibilidade():
 
         elif not any(servico[0] == int(servico_texto) for servico in servicos):
             erro = "O serviço selecionado não está disponível."
+
+        elif not data_texto:
+            # Serviço escolhido: exibe o calendário antes de consultar horários.
+            pass
 
         else:
             try:
@@ -806,6 +1080,7 @@ def consultar_disponibilidade():
     return render_template(
         "disponibilidade.html",
         servicos=servicos,
+        estabelecimento=estabelecimento,
         servico_selecionado=servico_texto,
         data_selecionada=data_texto,
         data_minima=date.today().isoformat(),
@@ -913,10 +1188,13 @@ def agendamento_confirmado(codigo):
         agendamento = conexao.execute(
             """
             SELECT
-                s.nome, a.data, a.hora, a.codigo_atendimento
+                s.nome, a.data, a.hora, a.codigo_atendimento,
+                s.duracao, a.preco_praticado, c.nome, c.telefone
             FROM agendamento AS a
             JOIN servico AS s
               ON s.id_servico = a.id_servico
+            JOIN cliente AS c
+              ON c.id_cliente = a.id_cliente
             WHERE a.codigo_atendimento = ?
             """,
             (codigo,),
@@ -1001,6 +1279,31 @@ def consultar_agendamento():
     )
 
 
+
+# Tela demonstrativa de recuperação de código (MVP, sem integração externa).
+@app.route("/esqueci-meu-codigo", methods=["GET", "POST"])
+def esqueci_meu_codigo():
+    import re
+
+    token = session.setdefault("csrf_esqueci_codigo", secrets.token_urlsafe(32))
+    erro = aviso = None
+    status = 200
+    if request.method == "POST":
+        telefone = re.sub(r"\\D", "", request.form.get("telefone", ""))
+        if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+            erro, status = "Formulário inválido. Atualize a página.", 400
+        elif len(telefone) not in (10, 11):
+            erro, status = "Informe um WhatsApp válido com DDD.", 400
+        else:
+            aviso = "Esta é uma demonstração do MVP. O envio automático pelo WhatsApp não está habilitado."
+    resposta = app.make_response((
+        render_template("esqueci_codigo.html", erro=erro, aviso=aviso, csrf_token=token),
+        status,
+    ))
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
 # Cancelar agendamento da cliente
 @app.route("/agendamentos/cancelar", methods=["POST"])
 def cancelar_agendamento():
@@ -1043,8 +1346,11 @@ def cancelar_agendamento():
         if agendamento is None:
             flash("Agendamento não encontrado.", "danger")
 
-        elif agendamento[3] != "agendado":
-            flash("Este agendamento não está ativo.", "danger")
+        elif agendamento[3] == "cancelado":
+            flash("Agendamentos cancelados não podem ter a situação alterada.", "danger")
+
+        elif agendamento[3] == nova_situacao:
+            flash("A situação já está salva neste atendimento.", "success")
 
         else:
             data_hora = datetime.strptime(
@@ -1214,6 +1520,10 @@ def reagendar():
                 duracao_override=agendamento[5],
             )
 
+            # A reserva atual não é uma opção de reagendamento.
+            if data_nova == agendamento[2]:
+                horarios = [hora for hora in horarios if hora != agendamento[3]]
+
     return render_template(
         "reagendar.html",
         agendamento=agendamento,
@@ -1232,7 +1542,7 @@ def reagendar():
 @app.route("/agenda")
 @login_obrigatorio
 def agenda_profissional():
-    from datetime import date
+    from datetime import date, datetime, timedelta
 
     data_filtro = request.args.get("data", "").strip()
     status_filtro = request.args.get("status", "todos")
@@ -1293,8 +1603,6 @@ def agenda_profissional():
         finally:
             conexao.close()
 
-    from datetime import datetime, timedelta
-
     token = session.get("csrf_agenda")
 
     if not token:
@@ -1302,21 +1610,14 @@ def agenda_profissional():
         session["csrf_agenda"] = token
 
     agora = datetime.now()
-
     finalizaveis = set()
-
     for atendimento in agendamentos:
-        if atendimento[8] != "agendado":
+        if atendimento[8] not in ("agendado", "concluido"):
             continue
-
         inicio = datetime.strptime(
-            f"{atendimento[1]} {atendimento[2]}",
-            "%Y-%m-%d %H:%M",
+            f"{atendimento[1]} {atendimento[2]}", "%Y-%m-%d %H:%M"
         )
-
-        fim = inicio + timedelta(minutes=atendimento[6])
-
-        if agora >= fim:
+        if agora >= inicio + timedelta(minutes=atendimento[6]):
             finalizaveis.add(atendimento[0])
 
     return render_template(
@@ -1368,8 +1669,11 @@ def alterar_situacao_agendamento(id_agendamento):
         if agendamento is None:
             flash("Agendamento não encontrado.", "danger")
 
-        elif agendamento[3] != "agendado":
-            flash("Este agendamento não está ativo.", "danger")
+        elif agendamento[3] == "cancelado":
+            flash("Agendamentos cancelados não podem ter a situação alterada.", "danger")
+
+        elif agendamento[3] == nova_situacao:
+            flash("Este atendimento já está com a situação selecionada.", "warning")
 
         else:
             inicio = datetime.strptime(
@@ -1377,11 +1681,9 @@ def alterar_situacao_agendamento(id_agendamento):
                 "%Y-%m-%d %H:%M",
             )
 
-            fim = inicio + timedelta(minutes=agendamento[2])
-
-            if datetime.now() < fim:
+            if datetime.now() < inicio + timedelta(minutes=agendamento[2]):
                 flash(
-                    "Aguarde o término previsto do atendimento.",
+                    "A situação só pode ser registrada após o término previsto do atendimento.",
                     "warning",
                 )
 
@@ -1391,7 +1693,7 @@ def alterar_situacao_agendamento(id_agendamento):
                     UPDATE agendamento
                     SET status = ?
                     WHERE id_agendamento = ?
-                      AND status = 'agendado'
+                      AND status IN ('agendado', 'concluido', 'falta')
                     """,
                     (nova_situacao, id_agendamento),
                 )
@@ -1592,8 +1894,11 @@ def marcar_notificacao_lida(id_notificacao):
     finally:
         conexao.close()
 
+    if request.form.get("origem") == "painel":
+        return redirect(url_for("painel"))
     return redirect(url_for("listar_notificacoes"))
 
 
 if __name__ == "__main__":
     app.run(debug=False)
+

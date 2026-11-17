@@ -1,14 +1,47 @@
+import os
 import sqlite3
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-DATABASE = BASE_DIR / "agendamento.db"
+# Em produção, configure DATABASE_PATH para um volume persistente.
+# Sem a variável, o banco local continua no mesmo caminho de sempre.
+DATABASE = Path(os.environ.get("DATABASE_PATH") or (BASE_DIR / "agendamento.db")).expanduser()
+
 
 
 def conectar():
-    conexao = sqlite3.connect(DATABASE)
+    # Aguarda brevemente escritas concorrentes antes de informar banco ocupado.
+    # Mantém as transações explícitas e as regras de agendamento existentes.
+    conexao = sqlite3.connect(DATABASE, timeout=15)
+    conexao.execute("PRAGMA busy_timeout = 15000")
     conexao.execute("PRAGMA foreign_keys = ON")
     return conexao
+
+
+def atualizar_cadastro_profissional(conexao):
+    """Migração aditiva: preserva contas e dados de bancos já existentes."""
+    conexao.execute("BEGIN IMMEDIATE")
+    try:
+        colunas = {linha[1] for linha in conexao.execute("PRAGMA table_info(profissional)")}
+        campos = {
+            "whatsapp": "TEXT NOT NULL DEFAULT ''",
+            "nome_empresa": "TEXT NOT NULL DEFAULT ''",
+            "frase_estabelecimento": "TEXT NOT NULL DEFAULT ''",
+            "logradouro": "TEXT NOT NULL DEFAULT ''",
+            "numero": "TEXT NOT NULL DEFAULT ''",
+            "complemento": "TEXT NOT NULL DEFAULT ''",
+            "bairro": "TEXT NOT NULL DEFAULT ''",
+            "cep": "TEXT NOT NULL DEFAULT ''",
+            "cidade": "TEXT NOT NULL DEFAULT ''",
+            "configuracao_concluida": "INTEGER NOT NULL DEFAULT 0",
+        }
+        for campo, definicao in campos.items():
+            if campo not in colunas:
+                conexao.execute(f"ALTER TABLE profissional ADD COLUMN {campo} {definicao}")
+        conexao.commit()
+    except Exception:
+        conexao.rollback()
+        raise
 
 
 def inicializar_banco():
@@ -23,6 +56,8 @@ def inicializar_banco():
                 senha_hash TEXT NOT NULL
             )
         """)
+
+        atualizar_cadastro_profissional(conexao)
 
         # Tabela 2 - Servicos
         conexao.execute("""
@@ -66,6 +101,11 @@ def inicializar_banco():
                     REFERENCES profissional(id_profissional)
             )
         """)
+
+        # Bloqueios semanais: mantém bloqueios antigos por data sem perda de dados.
+        colunas_bloqueio = {linha[1] for linha in conexao.execute("PRAGMA table_info(bloqueio)")}
+        if "dia_semana" not in colunas_bloqueio:
+            conexao.execute("ALTER TABLE bloqueio ADD COLUMN dia_semana INTEGER CHECK (dia_semana BETWEEN 0 AND 6)")
 
         # Tabela 5 - Clientes
         conexao.execute("""
@@ -121,3 +161,37 @@ def inicializar_banco():
 
 if __name__ == "__main__":
     inicializar_banco()
+
+
+
+def concluir_agendamentos_vencidos(agora=None):
+    """Conclui atendimentos ativos cujo horário de término já passou.
+
+    Usa a duração registrada no agendamento, não a duração atual do serviço.
+    Preserva cancelamentos, faltas e conclusões existentes.
+    """
+    from datetime import datetime
+
+    instante = agora or datetime.now()
+    with conectar() as conexao:
+        cursor = conexao.execute(
+            """
+            UPDATE agendamento
+               SET status = 'concluido'
+             WHERE status = 'agendado'
+               AND datetime(
+                   data || ' ' || hora,
+                   '+' || duracao_minutos || ' minutes'
+               ) <= datetime(?)
+            """,
+            (instante.strftime("%Y-%m-%d %H:%M:%S"),),
+        )
+        return cursor.rowcount
+
+
+def atualizar_bloqueios_semanais(conexao):
+    """Adiciona dia da semana ao banco existente, preservando bloqueios por data."""
+    colunas = {linha[1] for linha in conexao.execute("PRAGMA table_info(bloqueio)")}
+    if "dia_semana" not in colunas:
+        conexao.execute("ALTER TABLE bloqueio ADD COLUMN dia_semana INTEGER CHECK (dia_semana BETWEEN 0 AND 6)")
+        conexao.commit()

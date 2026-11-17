@@ -1,60 +1,68 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Painel Administrativo</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-
-<body class="bg-light">
-
-    <main class="container py-5">
-
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-
-                <h1>Painel Administrativo</h1>
-
-                <p class="lead">
-                    Bem-vinda, {{ nome }}!
-                </p>
-
-                <div class="alert alert-success">
-                    Login realizado com sucesso.
-                </div>
-
-                <p>
-                    Esta é a área administrativa protegida
-                    do sistema de agendamentos.
-                </p>
-
-                <form action="/sair" method="POST">
-                    <a href="{{ url_for('agenda_profissional') }}" class="btn btn-primary mb-3">
-                        Ver Agenda de Atendimentos
-                    </a>
-
-                    <a href="{{ url_for('historico_atendimentos') }}" class="btn btn-outline-primary mb-3">
-                        Ver Histórico de Atendimentos
-                    </a>
-
-                    <a href="{{ url_for('listar_notificacoes') }}" class="btn btn-outline-primary mb-3">
-                        Ver Notificações
-                    </a>
-
-                    <button type="submit" class="btn btn-outline-danger">
-                        Sair da conta
-                    </button>
-                </form>
-
-            </div>
-        </div>
-
-    </main>
-
-</body>
-
-</html>
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SUA AGENDA, SEU CONTROLE</p><h1>Dashboard</h1><p class="text-muted">Bem-vinda, {{ nome }}. Vamos cuidar da sua agenda?</p></div><a class="btn btn-primary" href="{{ url_for('agenda_profissional', data=dia.isoformat()) }}">Ver agenda do dia ↗</a></div>
+{% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
+{% if configuracao_pendente %}
+<section class="welcome-card"><span class="welcome-spark" aria-hidden="true">✦</span><div style="width:100%">
+<h2>Seu espaço está quase pronto para receber clientes!</h2>
+<p>Vamos preparar sua agenda em três passos simples? Você cadastra seus serviços, escolhe seus horários e personaliza seu estabelecimento.</p>
+<div class="d-flex gap-2 flex-wrap" style="align-items:center;margin-bottom:14px">
+<span class="btn btn-outline-primary" style="pointer-events:none">{{ '✓' if servicos_ativos else '1.' }} Serviços</span>
+<span class="btn btn-outline-primary" style="pointer-events:none">{{ '✓' if periodos else '2.' }} Horários</span>
+<span class="btn btn-outline-primary" style="pointer-events:none">{{ '✓' if estabelecimento_configurado else '3.' }} Estabelecimento</span>
+</div>
+<a class="btn btn-primary" href="{{ url_for('listar_servicos') }}" style="max-width:100%;white-space:normal;text-align:center">Começar minha configuração →</a>
+</div></section>
+{% endif %}
+<section class="card updates"><div class="section-heading"><h2>Últimas novidades</h2><a href="{{ url_for('listar_notificacoes') }}">Ver notificações →</a></div>
+{% set eventos = {'novo_agendamento':'Novo agendamento', 'cancelamento':'Cancelamento', 'reagendamento':'Reagendamento', 'conclusao':'Atendimento concluído', 'falta':'Falta registrada'} %}
+{% for aviso in avisos %}
+<div class="update-row dashboard-notice">
+  <span class="notification-dot" aria-hidden="true"></span>
+  <div class="dashboard-notice-content">
+    <div class="dashboard-notice-header">
+      <strong>{{ eventos.get(aviso[0], aviso[0]) }}</strong>
+      <form method="POST" action="{{ url_for('marcar_notificacao_lida', id_notificacao=aviso[4]) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_notificacoes }}">
+        <input type="hidden" name="origem" value="painel">
+        <button type="submit" class="dashboard-notice-read" aria-label="Marcar notificação de {{ aviso[1] }} como lida">✓ Marcar como lida</button>
+      </form>
+    </div>
+    <p>{{ aviso[1] }} <span class="text-muted">· {{ aviso[2][8:10] }}/{{ aviso[2][5:7] }}/{{ aviso[2][:4] }} às {{ aviso[3] }}</span></p>
+    <a class="dashboard-notice-link" href="{{ url_for('agenda_profissional', data=aviso[2]) }}">Ver em agendamentos →</a>
+  </div>
+</div>{% else %}<p class="quiet-state">Tudo em dia. Nenhuma notificação pendente.</p>{% endfor %}</section>
+<form class="date-bar" method="GET"><a class="date-arrow" aria-label="Dia anterior" href="{{ url_for('painel', data=anterior or dia.isoformat()) }}">‹</a><div><label for="dia-dashboard">Agenda do dia</label><input id="dia-dashboard" type="date" name="data" value="{{ dia.isoformat() }}" required><button class="btn btn-sm btn-outline-primary" type="submit">Ver dia</button></div><a class="date-arrow" aria-label="Próximo dia" href="{{ url_for('painel', data=proximo or dia.isoformat()) }}">›</a></form>
+<section class="stats" aria-label="Resumo do dia">
+{% for valor, label, tipo, icon in [(atendimentos|length,'Total de atendimentos','purple','◷'),(totais['concluido'],'Concluídos','green','✓'),(totais['cancelado'],'Cancelados','rose','×'),(totais['falta'],'Faltas','amber','–')] %}<article class="stat-card"><span class="stat-icon {{ tipo }}" aria-hidden="true">{{ icon }}</span><strong>{{ valor }}</strong><span>{{ label }}</span></article>{% endfor %}
+</section>
+<section class="card daily"><div class="section-heading"><div><h2>Atendimentos do dia</h2><p class="text-muted">{{ totais['agendado'] }} agendado(s) para esta data</p></div><a href="{{ url_for('agenda_profissional', data=dia.isoformat()) }}">Gerenciar →</a></div>
+{% set rotulos = {'agendado':'Agendado', 'concluido':'Concluído', 'cancelado':'Cancelado', 'falta':'Falta'} %}
+{% for atendimento in atendimentos %}<article class="appointment"><span class="avatar" aria-hidden="true">{{ atendimento[1][:1]|upper }}</span><div class="appointment-client"><strong>{{ atendimento[1] }}</strong><span>{{ atendimento[2] }} · {{ atendimento[4] }} min</span></div><strong class="appointment-time">{{ atendimento[0] }}</strong><span class="status status-{{ atendimento[3] }}">{{ rotulos[atendimento[3]] }}</span></article>
+{% else %}<div class="empty-state"><span aria-hidden="true">▦</span><h3>Um espaço livre na sua agenda</h3><p>Nenhum atendimento nesta data. Consulte outros dias ou confira seus horários.</p><a class="btn btn-outline-primary" href="{{ url_for('listar_horarios') }}">Consultar horários</a></div>{% endfor %}
+</section>
+<style>
+/* Ações das notificações: cabeçalho flexível, sem empilhar o botão em telas estreitas. */
+.dashboard-notice { display:flex; align-items:flex-start; gap:8px; min-width:0; }
+.dashboard-notice > .notification-dot { flex:0 0 auto; margin-top:7px; }
+.dashboard-notice-content { flex:1 1 auto; min-width:0; }
+.dashboard-notice-header { display:flex; align-items:flex-start; justify-content:space-between; gap:6px; min-width:0; }
+.dashboard-notice-header strong { flex:1 1 auto; min-width:0; overflow-wrap:anywhere; }
+.dashboard-notice-header form { flex:0 0 auto; margin:0; }
+.dashboard-notice-read { appearance:none; border:1px solid #b6d9c6; border-radius:8px; background:#eaf6ef; color:#176044; padding:5px 7px; font:inherit; font-size:10px; font-weight:600; line-height:1.25; cursor:pointer; white-space:nowrap; }
+.dashboard-notice-read:hover { background:#d8efe2; }
+.dashboard-notice-read:focus-visible, .dashboard-notice-link:focus-visible { outline:2px solid #7a0f2e; outline-offset:3px; }
+.dashboard-notice-content p { margin:6px 0 8px; overflow-wrap:anywhere; }
+.dashboard-notice-link { display:inline-flex; align-items:center; justify-content:center; border:1px solid #e7a9b8; border-radius:8px; padding:6px 9px; color:#7a0f2e; background:#fff; text-decoration:none; font-size:11px; font-weight:600; line-height:1.35; max-width:100%; text-align:center; }
+.dashboard-notice-link:hover { background:#fff1f5; }
+@media (max-width:480px) {
+  .dashboard-notice { gap:6px; }
+  .dashboard-notice-header { gap:5px; }
+  .dashboard-notice-header strong { font-size:11px; }
+  .dashboard-notice-read { font-size:9px; padding:5px 6px; }
+  .dashboard-notice-content p { font-size:10px; }
+  .dashboard-notice-link { font-size:10px; padding:6px 8px; }
+}
+</style>
+{% endblock %}

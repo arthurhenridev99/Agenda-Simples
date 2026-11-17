@@ -1,6 +1,6 @@
 from datetime import date, datetime, time, timedelta
 
-from database import conectar
+from database import conectar, atualizar_bloqueios_semanais
 
 
 def converter_minutos(horario):
@@ -55,13 +55,15 @@ def calcular_horarios_disponiveis(
             (id_profissional, data_escolhida.weekday()),
         ).fetchall()
 
+        atualizar_bloqueios_semanais(conexao)
         bloqueios = conexao.execute(
             """
             SELECT hora_inicio, hora_fim
             FROM bloqueio
-            WHERE id_profissional = ? AND data = ?
+            WHERE id_profissional = ?
+              AND (dia_semana = ? OR (dia_semana IS NULL AND data = ?))
             """,
-            (id_profissional, data_texto),
+            (id_profissional, data_escolhida.weekday(), data_texto),
         ).fetchall()
 
         # Considerar a duração salva na época da reserva

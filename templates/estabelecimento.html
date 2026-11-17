@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Dados do estabelecimento{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CONFIGURAÇÃO DA AGENDA</p><h1>Seu estabelecimento</h1><p class="text-muted">Preencha os dados do seu espaço. Na página pública, exibiremos o nome, a frase de boas-vindas, a cidade e o WhatsApp informado no cadastro.</p></div></div>
+<section class="card auth-card" style="max-width:650px;margin:0 auto"><div class="card-body">
+{% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
+{% if sucesso %}<div class="alert alert-success" role="status">{{ sucesso }}</div>{% endif %}
+<form method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<div class="mb-3"><label for="nome_empresa">Nome do estabelecimento *</label><input class="form-control" id="nome_empresa" name="nome_empresa" maxlength="100" value="{{ dados.nome_empresa }}" required></div>
+<div class="mb-3"><label for="frase_estabelecimento">Sua frase de boas-vindas *</label><p class="text-muted" style="margin:6px 0 10px">Este é o seu espaço para acolher quem está chegando! Escreva uma frase curta e carinhosa que represente o cuidado que você oferece. Ela aparecerá logo abaixo do nome do seu estabelecimento na página de agendamento, ajudando suas clientes a se sentirem bem-vindas. Por exemplo: “Um momento especial de cuidado para você”.</p><input class="form-control" id="frase_estabelecimento" name="frase_estabelecimento" maxlength="150" placeholder="Escreva aqui sua mensagem especial" value="{{ dados.frase_estabelecimento }}" required></div>
+<div class="mb-3"><label for="logradouro">Rua ou avenida *</label><input class="form-control" id="logradouro" name="logradouro" maxlength="100" value="{{ dados.logradouro }}" required></div>
+<div class="mb-3"><label for="numero">Número *</label><input class="form-control" id="numero" name="numero" maxlength="100" value="{{ dados.numero }}" required></div>
+<div class="mb-3"><label for="complemento">Complemento (opcional)</label><input class="form-control" id="complemento" name="complemento" maxlength="150" value="{{ dados.complemento }}"></div>
+<div class="mb-3"><label for="bairro">Bairro *</label><input class="form-control" id="bairro" name="bairro" maxlength="100" value="{{ dados.bairro }}" required></div>
+<div class="mb-3"><label for="cep">CEP *</label><input class="form-control" id="cep" name="cep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="{{ dados.cep[:5] ~ '-' ~ dados.cep[5:] if dados.cep|length == 8 else dados.cep }}" required></div>
+<div class="mb-3"><label for="cidade">Cidade *</label><input class="form-control" id="cidade" name="cidade" maxlength="100" value="{{ dados.cidade }}" required></div>
+<p class="text-muted">Endereço completo salvo para uso administrativo. Somente a cidade aparecerá para os clientes.</p>
+{% if configuracao_pendente %}<p class="text-muted">Passo 3 de 3 · Está quase tudo pronto! Confira os dados e finalize a configuração da sua agenda.</p>{% endif %}
+<div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+<a class="btn btn-secondary" href="{{ url_for('painel') }}">Voltar ao painel</a>
+{% if configuracao_pendente %}<button type="submit" name="finalizar_configuracao" value="1" class="btn btn-primary">Finalizar configuração da agenda ✓</button>{% else %}<button type="submit" class="btn btn-primary">Salvar dados do estabelecimento</button>{% endif %}
+</div>
+</form></div></section>
+<script>document.addEventListener('DOMContentLoaded',()=>{const c=document.getElementById('cep');c.addEventListener('input',()=>{const d=c.value.replace(/\D/g,'').slice(0,8);c.value=d.length>5?d.slice(0,5)+'-'+d.slice(5):d})})</script>
+{% endblock %}
