@@ -1465,7 +1465,7 @@ def reagendar():
 @app.route("/agenda")
 @login_obrigatorio
 def agenda_profissional():
-    from datetime import date
+    from datetime import date, datetime, timedelta
 
     data_filtro = request.args.get("data", "").strip()
     status_filtro = request.args.get("status", "todos")
@@ -1532,6 +1532,17 @@ def agenda_profissional():
         token = secrets.token_urlsafe(32)
         session["csrf_agenda"] = token
 
+    agora = datetime.now()
+    finalizaveis = set()
+    for atendimento in agendamentos:
+        if atendimento[8] not in ("agendado", "concluido"):
+            continue
+        inicio = datetime.strptime(
+            f"{atendimento[1]} {atendimento[2]}", "%Y-%m-%d %H:%M"
+        )
+        if agora >= inicio + timedelta(minutes=atendimento[6]):
+            finalizaveis.add(atendimento[0])
+
     return render_template(
         "agenda.html",
         agendamentos=agendamentos,
@@ -1539,6 +1550,7 @@ def agenda_profissional():
         status_filtro=status_filtro,
         erro=erro,
         csrf_token=token,
+        finalizaveis=finalizaveis,
     )
 
 
@@ -1546,7 +1558,7 @@ def agenda_profissional():
 @app.route("/agenda/<int:id_agendamento>/situacao", methods=["POST"])
 @login_obrigatorio
 def alterar_situacao_agendamento(id_agendamento):
-    from datetime import datetime
+    from datetime import datetime, timedelta
     from flask import flash
 
     token_esperado = session.get("csrf_agenda", "")
@@ -1592,9 +1604,9 @@ def alterar_situacao_agendamento(id_agendamento):
                 "%Y-%m-%d %H:%M",
             )
 
-            if datetime.now() < inicio:
+            if datetime.now() < inicio + timedelta(minutes=agendamento[2]):
                 flash(
-                    "A situação só pode ser registrada a partir do início do atendimento.",
+                    "A situação só pode ser registrada após o término previsto do atendimento.",
                     "warning",
                 )
 
