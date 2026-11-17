@@ -144,12 +144,6 @@ Esses resultados representam **validação manual informada**, não uma garantia
 - **Recuperação de senha por e-mail** e **recuperação de código por WhatsApp**: não fazem parte da entrega operacional atual. Existem rotas e código preparatório no repositório, mas integrações externas não foram configuradas como funcionalidades ativas.
 - **Backup externo automatizado**: não implantado. O repositório contém um utilitário administrativo opcional e orientações em [`BACKUP_RESTAURACAO.md`](BACKUP_RESTAURACAO.md); sua presença não significa que existam cópias externas.
 
-## Documentação complementar
-
-- [Reformulação da interface](RELATORIO_INTERFACE.md)
-- [Cadastro e infraestrutura opcional de recuperação](RECUPERACAO_DE_SENHA.md)
-- [Backup e restauração (procedimento não implantado)](BACKUP_RESTAURACAO.md)
-
 ## Segurança e privacidade
 
 - Senhas são armazenadas como hashes.
