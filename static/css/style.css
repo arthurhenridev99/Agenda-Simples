@@ -1437,12 +1437,12 @@ a:hover {color:#E91E63}
 }
 
 /* Controle compacto de situação na agenda, com ajuste responsivo. */
-.page-agenda .agenda-situacao-cell {min-width:0}
-.page-agenda .agenda-situacao-form {display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;margin:0}
-.page-agenda .agenda-situacao-select {width:112px;min-width:0;max-width:112px;min-height:32px;padding:5px 24px 5px 9px;font-size:12px;line-height:1.3;border-radius:9px}
-.page-agenda .agenda-situacao-save {min-height:32px;padding:5px 10px;font-size:12px;line-height:1.3;border-radius:9px;white-space:nowrap}
+.page-agenda_profissional .agenda-situacao-cell {min-width:0}
+.page-agenda_profissional .agenda-situacao-form {display:flex;align-items:center;gap:6px;width:max-content;max-width:100%;margin:0}
+.page-agenda_profissional .agenda-situacao-select {width:112px;min-width:0;max-width:112px;min-height:32px;padding:5px 24px 5px 9px;font-size:12px;line-height:1.3;border-radius:9px}
+.page-agenda_profissional .agenda-situacao-save {min-height:32px;padding:5px 10px;font-size:12px;line-height:1.3;border-radius:9px;white-space:nowrap}
 @media(max-width:760px) {
-  .page-agenda .agenda-situacao-form {gap:6px}
-  .page-agenda .agenda-situacao-select {width:108px;max-width:108px;min-height:38px;font-size:13px}
-  .page-agenda .agenda-situacao-save {min-height:38px;padding:7px 10px;font-size:12px}
+  .page-agenda_profissional .agenda-situacao-form {gap:6px}
+  .page-agenda_profissional .agenda-situacao-select {width:108px;max-width:108px;min-height:38px;font-size:13px}
+  .page-agenda_profissional .agenda-situacao-save {min-height:38px;padding:7px 10px;font-size:12px}
 }
