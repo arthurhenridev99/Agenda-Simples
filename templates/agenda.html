@@ -96,7 +96,9 @@
                                 <td>
                                     {% if agendamento[8] == "cancelado" %}
                                     <span class="badge bg-secondary">Cancelado</span>
-                                    {% else %}
+                                    {% elif agendamento[8] == "falta" %}
+                                    <span class="badge bg-warning text-dark">Falta</span>
+                                    {% elif agendamento[8] in ("agendado", "concluido") %}
                                     <form method="POST" class="d-flex align-items-center gap-2"
                                         action="{{ url_for('alterar_situacao_agendamento', id_agendamento=agendamento[0]) }}"
                                         onsubmit="return confirm('Confirmar a situação deste atendimento?');">
