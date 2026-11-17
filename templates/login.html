@@ -6,6 +6,7 @@
   <h2 class="text-center">Entrar</h2><p class="text-center text-muted mb-4">Entre com suas credenciais para acessar o painel</p>
   {% if erro %}<div class="alert alert-danger" role="alert">{{ erro }}</div>{% endif %}
   <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="mb-3"><label for="login">E-mail ou login</label><input id="login" name="login" class="form-control" autocomplete="username" placeholder="seu@email.com" value="{{ request.form.get('login', '') }}" required></div>
     <div class="mb-3"><label for="senha">Senha</label><div class="password-field"><input id="senha" name="senha" type="password" class="form-control" autocomplete="current-password" required><button type="button" class="password-toggle" data-password="senha" aria-label="Mostrar senha" aria-pressed="false" hidden>Mostrar</button></div></div>
     <button class="btn btn-primary w-100" type="submit">Entrar</button>
