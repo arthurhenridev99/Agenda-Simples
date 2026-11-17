@@ -1273,7 +1273,7 @@ def cancelar_agendamento():
             flash("Agendamentos cancelados não podem ter a situação alterada.", "danger")
 
         elif agendamento[3] == nova_situacao:
-            flash("Este atendimento já está com a situação selecionada.", "warning")
+            flash("A situação já está salva neste atendimento.", "success")
 
         else:
             data_hora = datetime.strptime(
