@@ -10,7 +10,10 @@ DATABASE = Path(os.environ.get("DATABASE_PATH") or (BASE_DIR / "agendamento.db")
 
 
 def conectar():
-    conexao = sqlite3.connect(DATABASE)
+    # Aguarda brevemente escritas concorrentes antes de informar banco ocupado.
+    # Mantém as transações explícitas e as regras de agendamento existentes.
+    conexao = sqlite3.connect(DATABASE, timeout=15)
+    conexao.execute("PRAGMA busy_timeout = 15000")
     conexao.execute("PRAGMA foreign_keys = ON")
     return conexao
 
