@@ -93,24 +93,28 @@
                                 <td>
                                     R$ {{ "%.2f"|format(agendamento[7]) }}
                                 </td>
-                                <td>
+                                <td class="agenda-situacao-cell">
                                     {% if agendamento[8] == "cancelado" %}
                                     <span class="badge bg-secondary">Cancelado</span>
                                     {% elif agendamento[8] == "falta" %}
                                     <span class="badge bg-warning text-dark">Falta</span>
-                                    {% elif agendamento[8] in ("agendado", "concluido") %}
-                                    <form method="POST" class="d-flex align-items-center gap-2"
+                                    {% elif agendamento[0] in finalizaveis %}
+                                    <form method="POST" class="agenda-situacao-form"
                                         action="{{ url_for('alterar_situacao_agendamento', id_agendamento=agendamento[0]) }}"
                                         onsubmit="return confirm('Confirmar a situação deste atendimento?');">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                         <label class="visually-hidden" for="situacao-{{ agendamento[0] }}">Situação do atendimento</label>
-                                        <select class="form-select form-select-sm" style="min-width:110px;max-width:145px" id="situacao-{{ agendamento[0] }}" name="situacao" required>
-                                            <option value="" disabled {% if agendamento[8] == 'agendado' %}selected{% endif %}>Agendado</option>
+                                        <select class="form-select form-select-sm agenda-situacao-select" id="situacao-{{ agendamento[0] }}" name="situacao" required>
+                                            <option value="" disabled {% if agendamento[8] == 'agendado' %}selected{% endif %}>Selecionar</option>
                                             <option value="concluido" {% if agendamento[8] == 'concluido' %}selected{% endif %}>Concluído</option>
-                                            <option value="falta" {% if agendamento[8] == 'falta' %}selected{% endif %}>Falta</option>
+                                            <option value="falta">Falta</option>
                                         </select>
-                                        <button class="btn btn-sm btn-outline-primary" type="submit">Salvar</button>
+                                        <button class="btn btn-sm btn-outline-primary agenda-situacao-save" type="submit">Salvar</button>
                                     </form>
+                                    {% elif agendamento[8] == "concluido" %}
+                                    <span class="badge bg-success">Concluído</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">Agendado</span>
                                     {% endif %}
                                 </td>
                                 <td><span class="text-muted">—</span></td>
