@@ -1,11 +1,6 @@
 # AgendaSimples 💅
 
-**Sistema web de agendamento de manicure e pedicure**, desenvolvido como projeto acadêmico PTDS, com interface responsiva para clientes e profissionais.
-
-[![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.1.3-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-banco%20de%20dados-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Status](https://img.shields.io/badge/status-projeto%20acad%C3%AAmico%20finalizado-2E8B57)](#validacao-do-projeto)
+**Sistema web de agendamento de manicure e pedicure**, desenvolvido como projeto acadêmico na disciplina de Projeto Tecnológico em Desenvolvimento de Sistemas na Universidade Luterana do Brasil - ULBRA, com interface responsiva para clientes e profissionais.
 
 > Repositório técnico: `PTDS-Agendamento` · Nome apresentado no sistema: **AgendaSimples**.
 
