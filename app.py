@@ -1,6 +1,9 @@
 ﻿import os
 import secrets
 import sqlite3
+import hashlib
+import time
+from datetime import timedelta
 from functools import wraps
 from notificacoes import registrar_notificacao
 from flask import Flask, render_template, request, redirect, url_for, session
@@ -12,6 +15,64 @@ app = Flask(__name__)
 # Chave necessária para proteger as sessões de login.
 # Em produção, deve ser definida na variável FLASK_SECRET_KEY.
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=bool(os.environ.get("RAILWAY_ENVIRONMENT")),
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=12),
+)
+if os.environ.get("RAILWAY_ENVIRONMENT") and not os.environ.get("FLASK_SECRET_KEY"):
+    app.logger.warning("FLASK_SECRET_KEY ausente: sessoes serao invalidadas em reinicializacoes.")
+
+
+@app.after_request
+def cabecalhos_sessao(resposta):
+    resposta.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resposta.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    resposta.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    if request.endpoint in ("login", "sair"):
+        resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
+def _chave_limite_login(tipo, valor):
+    return hashlib.sha256((tipo + ":" + valor).encode("utf-8")).hexdigest()
+
+
+def _controle_tentativas_login(login_informado, sucesso=False):
+    """Limite compartilhado via SQLite, persistente entre reinicializacoes.
+
+    Ate cinco falhas por login em quinze minutos. Nao guarda identificadores em texto.
+    """
+    chave = _chave_limite_login("conta", login_informado.casefold())
+    agora = int(time.time())
+    janela = 900
+    with conectar() as conexao:
+        conexao.execute("""CREATE TABLE IF NOT EXISTS limite_login (
+            chave TEXT PRIMARY KEY, tentativas INTEGER NOT NULL,
+            inicio INTEGER NOT NULL)""")
+        conexao.execute("BEGIN IMMEDIATE")
+        registro = conexao.execute(
+            "SELECT tentativas, inicio FROM limite_login WHERE chave = ?", (chave,)
+        ).fetchone()
+        if sucesso:
+            conexao.execute("DELETE FROM limite_login WHERE chave = ?", (chave,))
+            return False
+        if registro and agora - registro[1] < janela and registro[0] >= 5:
+            return True
+        if not registro or agora - registro[1] >= janela:
+            conexao.execute(
+                "INSERT INTO limite_login(chave, tentativas, inicio) VALUES (?, 1, ?) "
+                "ON CONFLICT(chave) DO UPDATE SET tentativas=1, inicio=excluded.inicio",
+                (chave, agora),
+            )
+        else:
+            conexao.execute(
+                "UPDATE limite_login SET tentativas = tentativas + 1 WHERE chave = ?",
+                (chave,),
+            )
+        return False
+
 
 
 def login_obrigatorio(funcao):
@@ -95,38 +156,54 @@ def login():
         return redirect(url_for("painel"))
 
     erro = None
-
+    token = session.setdefault("csrf_login", secrets.token_urlsafe(32))
     if request.method == "POST":
+        if not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+            return "Formulário inválido. Atualize a página e tente novamente.", 400
+
         login_informado = request.form.get("login", "").strip()
         if "@" in login_informado:
             login_informado = login_informado.lower()
         senha = request.form.get("senha", "")
 
-        conexao = conectar()
+        # Rejeita identificadores excessivos antes de consultar o banco.
+        if not login_informado or len(login_informado) > 254 or len(senha) > 1024:
+            erro = "Login ou senha inválidos."
+        else:
+            # Verifica o limite sem consumir uma tentativa; a falha e contabilizada abaixo.
+            chave = _chave_limite_login("conta", login_informado.casefold())
+            agora = int(time.time())
+            with conectar() as conexao:
+                conexao.execute("""CREATE TABLE IF NOT EXISTS limite_login (
+                    chave TEXT PRIMARY KEY, tentativas INTEGER NOT NULL,
+                    inicio INTEGER NOT NULL)""")
+                registro = conexao.execute(
+                    "SELECT tentativas, inicio FROM limite_login WHERE chave = ?", (chave,)
+                ).fetchone()
+            if registro and registro[0] >= 5 and agora - registro[1] < 900:
+                erro = "Muitas tentativas. Aguarde 15 minutos e tente novamente."
+            else:
+                conexao = conectar()
+                try:
+                    profissional = conexao.execute(
+                        "SELECT id_profissional, nome, senha_hash FROM profissional WHERE login = ?",
+                        (login_informado,),
+                    ).fetchone()
+                finally:
+                    conexao.close()
 
-        try:
-            profissional = conexao.execute(
-                """
-                SELECT id_profissional, nome, senha_hash
-                FROM profissional
-                WHERE login = ?
-                """,
-                (login_informado,),
-            ).fetchone()
-        finally:
-            conexao.close()
+                if profissional and check_password_hash(profissional[2], senha):
+                    _controle_tentativas_login(login_informado, sucesso=True)
+                    session.clear()
+                    session.permanent = True
+                    session["id_profissional"] = profissional[0]
+                    session["nome_profissional"] = profissional[1]
+                    return redirect(url_for("painel"))
 
-        if profissional and check_password_hash(profissional[2], senha):
-            session.clear()
-            session["id_profissional"] = profissional[0]
-            session["nome_profissional"] = profissional[1]
+                _controle_tentativas_login(login_informado)
+                erro = "Login ou senha inválidos."
 
-            return redirect(url_for("painel"))
-
-        erro = "Login ou senha inválidos."
-
-    return render_template("login.html", erro=erro)
-
+    return render_template("login.html", erro=erro, csrf_token=token)
 
 @app.route("/esqueci-minha-senha", methods=["GET", "POST"])
 def esqueci_minha_senha():
