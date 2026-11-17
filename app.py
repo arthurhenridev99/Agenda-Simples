@@ -19,7 +19,7 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=bool(os.environ.get("RAILWAY_ENVIRONMENT")),
-    PERMANENT_SESSION_LIFETIME=timedelta(hours=12),
+    PERMANENT_SESSION_LIFETIME=timedelta(days=14),
 )
 if os.environ.get("RAILWAY_ENVIRONMENT") and not os.environ.get("FLASK_SECRET_KEY"):
     app.logger.warning("FLASK_SECRET_KEY ausente: sessoes serao invalidadas em reinicializacoes.")
