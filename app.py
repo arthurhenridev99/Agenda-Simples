@@ -1580,8 +1580,11 @@ def alterar_situacao_agendamento(id_agendamento):
         if agendamento is None:
             flash("Agendamento não encontrado.", "danger")
 
-        elif agendamento[3] != "agendado":
-            flash("Este agendamento não está ativo.", "danger")
+        elif agendamento[3] == "cancelado":
+            flash("Agendamentos cancelados não podem ter a situação alterada.", "danger")
+
+        elif agendamento[3] == nova_situacao:
+            flash("Este atendimento já está com a situação selecionada.", "warning")
 
         else:
             inicio = datetime.strptime(
